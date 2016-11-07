@@ -1,0 +1,10 @@
+.imagesList{
+  margin-top:25px;
+}
+.searchInput{
+  max-width:350px!important;
+  width:300px;
+}
+*{
+  font-family: 'Roboto', sans-serif;
+}
