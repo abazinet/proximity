@@ -2,36 +2,48 @@
 // where your node app starts
 
 // init project
-var express = require('express');
-var app = express();
+const express = require('express');
+const _ = require('lodash');
 
-// we've started you off with Express, 
-// but feel free to use whatever libs or frameworks you'd like through `package.json`.
+const app = express();
+const participants = []; // the room is empty at this stage
 
-// http://expressjs.com/en/starter/static-files.html
+const roomSize = 1000;
+
+function Person({ name, lat, long, roomOwner }) {
+	this.name = name;
+	this.lat = lat;
+	this.long = long;
+	this.roomOwner = roomOwner;
+}
+
+function calcDistance(aLat, aLong, bLat, bLong) {
+	return 0;
+}
+
 app.use(express.static('public'));
 
-// http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (request, response) {
+app.get('/', (request, response) => {
   response.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/dreams", function (request, response) {
-  response.send(dreams);
+app.post('/locate', (request, response) => {
+  const chatter = new Person(request.body);
+
+  const colleagues = participants.filter(
+  	person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
+  );
+  participants.add(chatter);
+  chatter.roomOwner = !!(colleagues.size() > 0);
+
+  response.send({
+  	chatters: colleagues.concat([chatter])
+  });
 });
 
-// could also use the POST body instead of query string: http://expressjs.com/en/api.html#req.body
-app.post("/dreams", function (request, response) {
-  dreams.push(request.query.dream);
-  response.sendStatus(200);
+app.post('/post', (request, response) => {
+  response.send(request.body);
 });
-
-// Simple in-memory store for now
-var dreams = [
-  "Find and count some sheep",
-  "Climb a really tall mountain",
-  "Wash the dishes"
-  ];
 
 // listen for requests :)
 listener = app.listen(process.env.PORT, function () {
