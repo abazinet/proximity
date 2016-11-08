@@ -7,7 +7,8 @@ self.addEventListener('fetch', event => {
 })
 
 self.addEventListener('sync', function (event) {
-  if (event.tag === 'gw-locate') {
+  //if (event.tag === 'gw-locate') {
     console.log('locate me');
-  }
+    event.waitUntil(Promise.resolve('success'));
+  //}
 });

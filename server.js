@@ -21,6 +21,21 @@ function calcDistance(aLat, aLong, bLat, bLong) {
 	return 0;
 }
 
+function getChatFolks(chatter) {
+  return participants.filter(
+  	person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
+  );
+}
+
+function addChatterToRoom(chatter) {
+	chatter.roomOwner = !!(colleagues.size() > 0);
+    participants.add(chatter);
+}
+
+function sendMsg(receiver, msg) {
+	return 'do-sth-to-send-a-message';
+}
+
 app.use(express.static('public'));
 
 app.get('/', (request, response) => {
@@ -30,19 +45,31 @@ app.get('/', (request, response) => {
 app.post('/locate', (request, response) => {
   const chatter = new Person(request.body);
 
-  const colleagues = participants.filter(
-  	person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
-  );
-  participants.add(chatter);
-  chatter.roomOwner = !!(colleagues.size() > 0);
+  const colleagues = getChatFolks(chatter);
+  const participates = participants.map(person => person.name).includes(chatter.name);
+  
+  if (!participates) {
+  	addChatterToRoom(chatter);
+  } else {
+    if (colleagues.includes(chatter)) {
+      
+    }
+  	// check if the distance is fine (colleagues.includes(chatter)),
+  	// if not - kick out from from the existing room and stick to a new one
+  	// in another case - we are good
+  }
 
-  response.send({
-  	chatters: colleagues.concat([chatter])
-  });
+  response.send({ colleagues });
 });
 
 app.post('/post', (request, response) => {
-  response.send(request.body);
+  const chatter = new Person(request.body);	
+  const msg = request.body.msg;
+
+  const msgReceivers = getChatFolks(chatter);
+  msgReceivers.forEach(person => sendMsg(person, msg));	 
+
+  response.send('ok');
 });
 
 // listen for requests :)

@@ -16,10 +16,10 @@ navigator
   .ready
   .then(registration => {
       registration.sync.register({
-        tag: 'gw-locate',         // default: ''
-        minPeriod: 30 * 1000, // default: 0
-        powerState: 'auto',   // default: 'auto'
-        networkState: 'online'  // default: 'online'
+        tag: 'gw-locate',
+        minPeriod: 30 * 1000,
+        powerState: 'auto',
+        networkState: 'online'
       })
     })
     .then(periodicSyncReg => {
