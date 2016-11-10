@@ -36,7 +36,7 @@ function addChatterToRoom(chatter, colleagues) {
 }
 
 function sendMsg(receiver, msg) {
-  // TODO impl
+  // TODO impl with push notifications
   return 'do-sth-to-send-a-message';
 }
 
@@ -56,13 +56,15 @@ app.post('/locate', (request, response) => {
   };
   
   if (chatter.participation.exists) {
-    // need to refresh participation (coords, etc.)
-    // TODO consider what if the guy used to be a room owner and now joinining a compeletely new one - who should become a new owner?
-    participants.delete(participation);
+    participants.delete(participation); // need to refresh participation (coords, etc.)
   }
   
   let colleagues = getChatFolks(chatter);
   colleagues = addChatterToRoom(chatter, colleagues);
+  if (!colleagues.any(person => person.roomOwner)) {
+    chatter.roomOwner = true;
+  }
+  
   response.send({ colleagues });
 });
 
