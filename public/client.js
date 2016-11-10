@@ -5,28 +5,35 @@ if (!'serviceWorker' in navigator) {
 navigator
   .serviceWorker
   .register('service-worker.js')
-  .then(registration => {
-    console.log(`ServiceWorker registered: ${registration.scope}`);
-  }).catch(err => {
-    console.error(`ServiceWorker registration failed: ${err}`);
-  })
-  
+  .then(registration => console.log(`ServiceWorker registered: ${registration.scope}`))
+  .catch(err => console.error(`ServiceWorker registration failed: ${err}`))
+
 navigator
   .serviceWorker
   .ready
   .then(registration => {
-      registration.sync.register({
-        tag: 'gw-locate',
-        minPeriod: 30 * 1000,
-        powerState: 'auto',
-        networkState: 'online'
-      })
-    })
-    .then(periodicSyncReg => {
-      console.log(`Periodic sync is installed ${periodicSyncReg}`);
-    }, () => {
-      throw new Error('periodSync registration failed.');
-    });
+    registration
+      .sync
+      .register('gw-background')
+      .catch(err => console.log(`error ${err}`));
+  });
+
+const getLocation = () => {
+  navigator.geolocation.getCurrentPosition(
+    position => console.log(position), 
+    () => console.log('location error'),
+    { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }
+  );
+};
+
+const everyFiveSeconds = () => {
+    getLocation();
+    setTimeout(() => {
+        everyFiveSeconds();
+    }, 5000);
+}
+
+everyFiveSeconds();
 
 class Container extends React.Component {
   clearServiceWorkers() {
