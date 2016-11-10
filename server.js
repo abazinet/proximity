@@ -6,34 +6,38 @@ const express = require('express');
 const _ = require('lodash');
 
 const app = express();
-const participants = []; // the room is empty at this stage
+const participants = new Set(); // the room is empty at this stage
 
-const roomSize = 1000;
+const roomSize = 1000; // TODO consider some reasonable value
 
 function Person({ name, lat, long, roomOwner }) {
 	this.name = name;
 	this.lat = lat;
 	this.long = long;
 	this.roomOwner = roomOwner;
+	this.participation = null;
 }
 
 function calcDistance(aLat, aLong, bLat, bLong) {
-	return 0;
+	return Math.sqrt(Math.pow(bLat-aLat, 2) + Math.pow(bLong-aLong, 2));
 }
 
 function getChatFolks(chatter) {
   return participants.filter(
-  	person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
+    person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
   );
 }
 
-function addChatterToRoom(chatter) {
-	chatter.roomOwner = !!(colleagues.size() > 0);
-    participants.add(chatter);
+function addChatterToRoom(chatter, colleagues) {
+  const colleaguesExist = colleagues.size() > 0;
+  chatter.roomOwner = chatter.participation.exists && colleaguesExist ? chatter.participation.roomOwner : !colleaguesExist;
+  participants.add(chatter);
+  return colleagues.push([chatter]);
 }
 
 function sendMsg(receiver, msg) {
-	return 'do-sth-to-send-a-message';
+  // TODO impl
+  return 'do-sth-to-send-a-message';
 }
 
 app.use(express.static('public'));
@@ -44,21 +48,21 @@ app.get('/', (request, response) => {
 
 app.post('/locate', (request, response) => {
   const chatter = new Person(request.body);
-
-  const colleagues = getChatFolks(chatter);
-  const participates = participants.map(person => person.name).includes(chatter.name);
   
-  if (!participates) {
-  	addChatterToRoom(chatter);
-  } else {
-    if (colleagues.includes(chatter)) {
-      
-    }
-  	// check if the distance is fine (colleagues.includes(chatter)),
-  	// if not - kick out from from the existing room and stick to a new one
-  	// in another case - we are good
+  const participation = participants.find(person => person.name === chatter.name);
+  chatter.participation = {
+    exists: !!participation,
+    roomOwner: participation ? participation.roomOwner : false
+  };
+  
+  if (chatter.participation.exists) {
+    // need to refresh participation (coords, etc.)
+    // TODO consider what if the guy used to be a room owner and now joinining a compeletely new one - who should become a new owner?
+    participants.delete(participation);
   }
-
+  
+  let colleagues = getChatFolks(chatter);
+  colleagues = addChatterToRoom(chatter, colleagues);
   response.send({ colleagues });
 });
 
