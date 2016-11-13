@@ -1,100 +1,152 @@
-function registerBackgroundSync() {
-  if (!'serviceWorker' in navigator) {
-    throw new Error('does your browser support service workers?');
+class Participants extends React.Component {
+  constructor(props) {
+    super(props);
+    this.defaultProps = { names: [] };
   }
 
-  navigator
-    .serviceWorker
-    .register('service-worker.js')
-    .then(registration => console.log(`ServiceWorker registered: ${registration.scope}`))
-    .catch(err => console.error(`ServiceWorker registration failed: ${err}`));
-  
-  navigator
-    .serviceWorker
-    .ready
-    .then(registration => {
-      registration
-        .sync
-        .register('gw-background')
-        .catch(err => console.log(`error ${err}`));
+  render() {
+    const list = this.props.names.map(name => <li key={ name }>{ name }</li>);
+    return <ul className="left">{ list }</ul>;
+  }
+}
+
+class Messages extends React.Component {
+  constructor(props) {
+    super(props);
+    this.defaultProps = { messages: [] };
+  }
+
+  render() {
+    const list = this.props.messages.map(message => <li key={ message.msg }>{ `${message.name}: ${message.msg}` }</li>);
+    return <ul className="right">{ list }</ul>;
+  }
+}
+
+class SendMessage extends React.Component {
+  sendMsg(msg) {
+    fetch('/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
     });
-}
+  }
 
-function getLocation() {
-  return new Promise((resolve, reject) => {
-     navigator.geolocation
-      .getCurrentPosition(
-        position => resolve(position),
-        error => reject(error),
-        { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }
-      );
-  });
-}
-
-function updateRoom() {
-  return getLocation().then(
-    position => {
-      const data = {
-        name: 'proximity_chatter',
-        lat: position.coords.latitude,
-        long: position.coords.longitude,
-      };
-
-      return fetch('/locate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json());
-    },
-    error => console.log('Error while getting current position: ', error)
-  );
-}
-
-function clearServiceWorkers() {
-  navigator.serviceWorker
-    .getRegistrations()
-    .then(registrations => {
-      registrations.forEach(registration => {
-        console.log(`clearing: ${registration}`);
-        registration.unregister();
-      });
-    });
-}
-  
-function sendMsg() {
-  // TODO impl
-  fetch('/post', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({})
-  });
+  render() {
+    return <div>
+      <input type="text" placeholder="type your message here..."></input>
+      <button onClick={ this.sendMsg }>Send</button>
+    </div>;
+  }
 }
 
 class Container extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      myName: Math.random().toString(36).slice(16),
+      participantNames: ['proximity_bot'],
+      messages: [
+        { name: 'proximity_bot', msg: 'welcome to proximity!'},
+        { name: 'proximity_bot', msg: 'i love coffee, who else does?'},
+      ]
+    };
+  }
+
+  registerBackgroundSync() {
+    if (!'serviceWorker' in navigator) {
+      throw new Error('does your browser support service workers?');
+    }
+
+    navigator
+      .serviceWorker
+      .register('service-worker.js')
+      .then(registration => console.log(`ServiceWorker registered: ${registration.scope}`))
+      .catch(err => console.error(`ServiceWorker registration failed: ${err}`));
+    
+    navigator
+      .serviceWorker
+      .ready
+      .then(registration => {
+        registration
+          .sync
+          .register('gw-background')
+          .catch(err => console.log(`error ${err}`));
+      });
+  }
+  
+  getLocation() {
+    return new Promise((resolve, reject) => {
+       navigator.geolocation
+        .getCurrentPosition(
+          resolve,
+          reject,
+          { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }
+        );
+    });
+  }
+  
+  updateRoom() {
+    return this.getLocation().then(
+      position => {
+        const data = {
+          name: this.state.myName,
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        };
+  
+        return fetch('/locate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(res => res.json());
+      },
+      error => console.log('Error while getting current position: ', error)
+    );
+  }
+  
+  clearServiceWorkers() {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then(registrations => {
+        registrations.forEach(registration => {
+          console.log(`clearing: ${registration}`);
+          registration.unregister();
+        });
+      });
+  }
+    
   updateChat(room) {
     console.log('CURRENT ROOM STATE', room);
-    // TODO impl: this.setState, etc.
+    const newNames = room.colleagues.map(c => c.name);
+    newNames.push('proximity_bot')
+    this.setState({
+      participantNames: newNames
+    });
   }
 
   componentWillMount() {
-    registerBackgroundSync();
+    this.registerBackgroundSync();
   }
   
   componentDidMount() {
     setInterval(
-      () => updateRoom().then(this.updateChat), 
+      () => this.updateRoom().then(this.updateChat.bind(this)),
       5000
     );
   }
-  
+
   render() {
     return (
       <div>
         <p>Proximity</p>
-        <button onClick={ clearServiceWorkers }>Clear Service Workers</button>
+        <button onClick={ this.clearServiceWorkers }>Clear Service Workers</button>
         <br/>
-        <button onClick={ sendMsg }>Send msg</button>
+        <div className="container">
+          <Participants names={ this.state.participantNames } />
+          <Messages messages={ this.state.messages } />
+        </div>
+        <SendMessage />
       </div>
     );
   }

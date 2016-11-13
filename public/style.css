@@ -1,0 +1,15 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+}
+.left, .right {
+  list-style-type: none;
+  flex: 1 300px;
+  min-width: 0;
+  background: #999966;
+  padding: 15px 0;
+}
+.right {
+  background: #cccccc;
+}
