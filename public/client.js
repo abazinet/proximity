@@ -1,3 +1,4 @@
+// Participants
 class Participants extends React.Component {
   constructor(props) {
     super(props);
@@ -10,6 +11,7 @@ class Participants extends React.Component {
   }
 }
 
+// Messages
 class Messages extends React.Component {
   constructor(props) {
     super(props);
@@ -17,14 +19,16 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map(message => <li key={ message.msg }>{ `${message.name}: ${message.msg}` }</li>);
+    const list = this.props.messages.map(message => <li key={ message.msg }>{ message.name + ':' + message.msg }</li>);
     return <ul className="right">{ list }</ul>;
   }
 }
 
+// Send
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
+    this.defaultProp = { name: 'missing name' };
     this.state = { msg: '', disabled: false};
   }
 
@@ -34,7 +38,7 @@ class SendMessage extends React.Component {
     fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this.state)
+      body: JSON.stringify({ msg: this.state.msg, name: this.props.name })
     }).then(() => {
       this.setState({ msg: '', disabled: false });
       ReactDOM.findDOMNode(this.refs.sendMsg).focus();
@@ -42,13 +46,11 @@ class SendMessage extends React.Component {
   }
 
   onChange(evt) {
-    this.setState({
-      msg: evt.target.value
-    })
+    this.setState({ msg: evt.target.value })
   }
   
   handleOnKeyPress(evt) {
-    if(evt.key == 'Enter') {
+    if(evt.key === 'Enter') {
       this.sendMsg();
     }
   }
@@ -69,12 +71,13 @@ class SendMessage extends React.Component {
   }
 }
 
+// Main component
 class Container extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      myName: Math.random().toString(36).slice(16),
-      participantNames: ['proximity_bot'],
+      myName: Math.random().toString(36).slice(16), // TODO: ALEX: Persist the name in cache, cookie?
+      participantNames: ['proximity_bot'], // TODO: ALEX: move to backend default bot + messages
       messages: [
         { name: 'proximity_bot', msg: 'welcome to proximity!'},
         { name: 'proximity_bot', msg: 'i love coffee, who else does?'},
@@ -134,20 +137,9 @@ class Container extends React.Component {
       error => console.log('Error while getting current position: ', error)
     );
   }
-  
-  clearServiceWorkers() {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then(registrations => {
-        registrations.forEach(registration => {
-          console.log(`clearing: ${registration}`);
-          registration.unregister();
-        });
-      });
-  }
-    
+
   updateChat(room) {
-    console.log('CURRENT ROOM STATE', room);
+    console.log('room state: ', room);
     if (!room) return;
 
     const newNames = room.colleagues.map(c => c.name);
@@ -171,14 +163,12 @@ class Container extends React.Component {
   render() {
     return (
       <div>
-        <p>Proximity</p>
-        <button onClick={ this.clearServiceWorkers }>Clear Service Workers</button>
-        <br/>
+        <h1>Proximity</h1>
         <div className="container">
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage />
+        <SendMessage name={ this.state.myName }/>
       </div>
     );
   }

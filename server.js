@@ -55,7 +55,10 @@ app.get('/', (request, response) => {
 });
 
 app.post('/locate', (request, response) => {
+  // TODO: ALEX: keep last updated time and sweep participants older than 5 minutes
+
   console.log(request.body);
+
   const chatter = new Person(request.body);
   
   const participation = [...participants].find(person => person.name === chatter.name);
@@ -81,6 +84,8 @@ app.post('/post', (request, response) => {
   const chatter = new Person(request.body);	
   const msg = request.body.msg;
   
+  console.log(request.body);
+
   const msgReceivers = getChatFolks(chatter);
   msgReceivers.forEach(person => sendMsg(person, msg));	 
 
