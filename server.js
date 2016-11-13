@@ -80,7 +80,7 @@ app.post('/locate', (request, response) => {
 app.post('/post', (request, response) => {
   const chatter = new Person(request.body);	
   const msg = request.body.msg;
-
+  
   const msgReceivers = getChatFolks(chatter);
   msgReceivers.forEach(person => sendMsg(person, msg));	 
 

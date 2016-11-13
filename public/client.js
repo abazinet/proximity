@@ -23,18 +23,42 @@ class Messages extends React.Component {
 }
 
 class SendMessage extends React.Component {
-  sendMsg(msg) {
+  constructor(props) {
+    super(props);
+    this.state = { msg: '' };
+  }
+
+  sendMsg() {
     fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({})
+      body: JSON.stringify(this.state)
+    }).then(() => {
+      this.setState({ msg: '' });
     });
+  }
+
+  onChange(evt) {
+    this.setState({
+      msg: evt.target.value
+    })
+  }
+  
+  handleOnKeyPress(evt) {
+    if(evt.key == 'Enter') {
+      this.sendMsg();
+    }
   }
 
   render() {
     return <div>
-      <input type="text" placeholder="type your message here..."></input>
-      <button onClick={ this.sendMsg }>Send</button>
+      <input type="text"
+             value={ this.state.msg }
+             placeholder="type your message here..."
+             onChange={ this.onChange.bind(this) }
+             onKeyPress={ this.handleOnKeyPress.bind(this) }>
+      </input>
+      <button onClick={ this.sendMsg.bind(this) }>Send</button>
     </div>;
   }
 }
