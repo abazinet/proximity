@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 const app = express();
 
+// TODO: ALEX: Switch to a participants map with key being the name of the participant
 let participants = []; // the room is empty at this stage
 const roomSize = 1000; // TODO consider some reasonable value
 

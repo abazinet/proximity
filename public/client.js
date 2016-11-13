@@ -28,7 +28,7 @@ class Messages extends React.Component {
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
-    this.defaultProp = { name: 'missing name', lat: 0, long: 0};
+    this.defaultProp = { name: 'missing_name', lat: 0, long: 0};
     this.state = { msg: '', disabled: false};
   }
 
@@ -38,7 +38,7 @@ class SendMessage extends React.Component {
     fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg: this.state.msg, name: this.props.name, lat: this.props.lat, long: this.props.long })
+      body: JSON.stringify({ msg: this.state.msg, ...this.props})
     }).then(() => {
       this.setState({ msg: '', disabled: false });
       ReactDOM.findDOMNode(this.refs.sendMsg).focus();
