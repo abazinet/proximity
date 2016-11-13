@@ -28,7 +28,7 @@ class Messages extends React.Component {
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
-    this.defaultProp = { name: 'missing name' };
+    this.defaultProp = { name: 'missing name', lat: 0, long: 0};
     this.state = { msg: '', disabled: false};
   }
 
@@ -38,7 +38,7 @@ class SendMessage extends React.Component {
     fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg: this.state.msg, name: this.props.name })
+      body: JSON.stringify({ msg: this.state.msg, name: this.props.name, lat: this.props.lat, long: this.props.long })
     }).then(() => {
       this.setState({ msg: '', disabled: false });
       ReactDOM.findDOMNode(this.refs.sendMsg).focus();
@@ -77,6 +77,8 @@ class Container extends React.Component {
     super(props);
     this.state = {
       myName: Math.random().toString(36).slice(16), // TODO: ALEX: Persist the name in cache, cookie?
+      lat: 0,
+      long: 0,
       participantNames: ['proximity_bot'], // TODO: ALEX: move to backend default bot + messages
       messages: [
         { name: 'proximity_bot', msg: 'welcome to proximity!'},
@@ -119,7 +121,10 @@ class Container extends React.Component {
   }
   
   updateRoom() {
-    return this.getLocation().then(
+    return this.getLocation().then(position => {
+        this.setState({lat: position.coords.latitude, long: position.coords.longitude });
+        return position;
+      }).then(
       position => {
         const data = {
           name: this.state.myName,
@@ -168,7 +173,7 @@ class Container extends React.Component {
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage name={ this.state.myName }/>
+        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long }/>
       </div>
     );
   }

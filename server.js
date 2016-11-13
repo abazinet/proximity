@@ -5,15 +5,18 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 const app = express();
 
-const participants = new Set(); // the room is empty at this stage
+let participants = []; // the room is empty at this stage
 const roomSize = 1000; // TODO consider some reasonable value
 
 function Person({ name, lat, long }) {
 	this.name = name;
 	this.lat = lat;
 	this.long = long;
-	this.roomOwner = false;
-	this.participation = null;
+	this.lastUpdate = new Date().getTime();
+	this.stale = () => {
+	  const currentTime = new Date().getTime();
+	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
+	}
 }
 
 function calcDistance(aLat, aLong, bLat, bLong) {
@@ -21,16 +24,15 @@ function calcDistance(aLat, aLong, bLat, bLong) {
 }
 
 function getChatFolks(chatter) {
-  return [...participants].filter(
+  return participants.filter(
     person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
   );
 }
 
-function addChatterToRoom(chatter, colleagues) {
-  const colleaguesExist = colleagues.length > 0;
-  chatter.roomOwner = chatter.participation.exists && colleaguesExist ? chatter.participation.roomOwner : !colleaguesExist;
-  participants.add(chatter);
-  return colleagues.concat([chatter]);
+function groomParticipants(chatter) {
+  participants = participants.filter( p => p.name !== chatter.name || !p.stale());
+  participants.push(chatter);
+  console.log(participants);
 }
 
 function sendMsg(receiver, msg) {
@@ -55,39 +57,25 @@ app.get('/', (request, response) => {
 });
 
 app.post('/locate', (request, response) => {
-  // TODO: ALEX: keep last updated time and sweep participants older than 5 minutes
-
   console.log(request.body);
 
   const chatter = new Person(request.body);
   
-  const participation = [...participants].find(person => person.name === chatter.name);
-  chatter.participation = {
-    exists: !!participation,
-    roomOwner: participation ? participation.roomOwner : chatter.roomOwner
-  };
+  groomParticipants(chatter);
   
-  if (chatter.participation.exists) {
-    participants.delete(participation); // need to refresh participation (coords, etc.)
-  }
-  
-  let colleagues = getChatFolks(chatter);
-  colleagues = addChatterToRoom(chatter, colleagues);
-  if (!colleagues.some(person => person.roomOwner)) {
-    chatter.roomOwner = true;
-  }
-  
+  const colleagues = getChatFolks(chatter);
+
   response.send({ colleagues });
 });
 
 app.post('/post', (request, response) => {
-  const chatter = new Person(request.body);	
+  const chatter = new Person(request.body);
   const msg = request.body.msg;
-  
-  console.log(request.body);
 
   const msgReceivers = getChatFolks(chatter);
-  msgReceivers.forEach(person => sendMsg(person, msg));	 
+  msgReceivers.forEach(person => sendMsg(person, msg));
+
+  console.log('Sent: ' + msg + ' to ' + msgReceivers.map(p => p.name));
 
   response.send('ok');
 });
