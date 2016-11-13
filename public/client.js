@@ -25,16 +25,19 @@ class Messages extends React.Component {
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { msg: '' };
+    this.state = { msg: '', disabled: false};
   }
 
   sendMsg() {
+    this.setState({ disabled: true });
+
     fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this.state)
     }).then(() => {
-      this.setState({ msg: '' });
+      this.setState({ msg: '', disabled: false });
+      ReactDOM.findDOMNode(this.refs.sendMsg).focus();
     });
   }
 
@@ -53,7 +56,10 @@ class SendMessage extends React.Component {
   render() {
     return <div>
       <input type="text"
+             autoFocus
              value={ this.state.msg }
+             disabled={ this.state.disabled }
+             ref="sendMsg"
              placeholder="type your message here..."
              onChange={ this.onChange.bind(this) }
              onKeyPress={ this.handleOnKeyPress.bind(this) }>
@@ -142,6 +148,8 @@ class Container extends React.Component {
     
   updateChat(room) {
     console.log('CURRENT ROOM STATE', room);
+    if (!room) return;
+
     const newNames = room.colleagues.map(c => c.name);
     newNames.push('proximity_bot')
     this.setState({
