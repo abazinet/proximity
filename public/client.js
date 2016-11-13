@@ -19,7 +19,7 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map(message => <li key={ message.msg }>{ message.name + ':' + message.msg }</li>);
+    const list = this.props.messages.map(message => <li key={ message.name + message.msg }>{ message.name + ':' + message.msg }</li>);
     return <ul className="right">{ list }</ul>;
   }
 }

@@ -32,7 +32,6 @@ function getChatFolks(chatter) {
 function groomParticipants(chatter) {
   participants = participants.filter( p => p.name !== chatter.name || !p.stale());
   participants.push(chatter);
-  console.log(participants);
 }
 
 function sendMsg(receiver, msg) {
