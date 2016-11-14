@@ -150,7 +150,7 @@ class Container extends React.Component {
         console.log(`Successfully subscribed for push notifications: ${swSubscription}`);
         return swSubscription;
       })
-      .catch(err => console.error('dupa', err));
+      .catch(err => console.error('Error occured when trying to subscribe SW for push notifications', err));
   }
   
   updateSubscriptionOnServer(swSubscription) {
