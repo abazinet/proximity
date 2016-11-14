@@ -38,21 +38,6 @@ function groomParticipants(chatter) {
   participants.push(chatter);
 }
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
 function sendMsg(receiver, msg) {
   if (!receiver.vapid || !receiver.subscription) {
     throw new Error(`User ${receiver.name} not subscribed properly. Cannot notify`);
@@ -94,9 +79,8 @@ app.post('/locate', (request, response) => {
   
   let data = { colleagues };
   if (!chatter.vapidKeys) {
-    const vapidKeys = webpush.generateVAPIDKeys();
-    chatter.vapid = vapidKeys;
-    data.subscriptionKey = urlBase64ToUint8Array(vapidKeys.publicKey);
+    chatter.vapid = webpush.generateVAPIDKeys();
+    data.subscriptionKey = chatter.vapid.publicKey;
   }
   
   response.send(data);
