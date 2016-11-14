@@ -228,10 +228,10 @@ class Container extends React.Component {
   }
   
   componentDidMount() {
-    // setInterval(
-    //   () => this.updateRoom().then(this.updateChat.bind(this)),
-    //   5000
-    // );
+    setInterval(
+      () => this.updateRoom().then(this.updateChat.bind(this)),
+      5000
+    );
     // TODO deregister when componentWillUnmount
   }
 
