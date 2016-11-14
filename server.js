@@ -2,6 +2,7 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
+const webpush = require('web-push');
 const _ = require('lodash');
 const app = express();
 
@@ -17,7 +18,9 @@ function Person({ name, lat, long }) {
 	this.stale = () => {
 	  const currentTime = new Date().getTime();
 	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
-	}
+	};
+	this.vapid = null;
+	this.subscription = null;
 }
 
 function calcDistance(aLat, aLong, bLat, bLong) {
@@ -35,9 +38,32 @@ function groomParticipants(chatter) {
   participants.push(chatter);
 }
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 function sendMsg(receiver, msg) {
-  // TODO impl with push notifications
-  return 'do-sth-to-send-a-message';
+  if (!receiver.vapid || !receiver.subscription) {
+    throw new Error(`User ${receiver.name} not subscribed properly. Cannot notify`);
+  }
+  
+  webpush.setVapidDetails(
+    `mailto:${receiver.name}@guidewire.com`,
+    receiver.vapid.publicKey,
+    receiver.vapid.privateKey
+  );
+  webpush.sendNotification(receiver.subscription, msg);
 }
 
 app.set('port', (process.env.PORT || 3000));
@@ -59,13 +85,32 @@ app.get('/', (request, response) => {
 app.post('/locate', (request, response) => {
   console.log(request.body);
 
-  const chatter = new Person(request.body);
+  let chatter = new Person(request.body);
   
   groomParticipants(chatter);
   
   const colleagues = getChatFolks(chatter);
+  chatter = colleagues.find(person => person.name === chatter.name);
+  
+  let data = { colleagues };
+  if (!chatter.vapidKeys) {
+    const vapidKeys = webpush.generateVAPIDKeys();
+    chatter.vapid = vapidKeys;
+    data.subscriptionKey = urlBase64ToUint8Array(vapidKeys.publicKey);
+  }
+  
+  response.send(data);
+});
 
-  response.send({ colleagues });
+app.post('/subscribe', (request, response) => {
+  const { name, subscription } = request.body;
+  
+  const chatter = participants.find(person => person.name === name);
+  if (chatter) {
+    chatter.subscription = subscription;
+  }
+  
+  response.send('ok');
 });
 
 app.post('/post', (request, response) => {
