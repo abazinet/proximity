@@ -92,29 +92,22 @@ class Container extends React.Component {
       throw new Error('does your browser support service workers?');
     }
     
-    return new Promise((resolve, reject) => {
-      navigator
-        .serviceWorker
-        .register('service-worker.js')
-        .then(registration => { 
-          console.log(`Push ServiceWorker registered: ${registration.scope}`);
-          resolve(registration);
-        })
-        .catch(err => {
-          console.error(`ServiceWorker registration failed: ${err}`);
-          reject(err);
-        })
-    });
+    navigator
+      .serviceWorker
+      .register('service-worker.js')
+      .then(registration => console.log(`Push ServiceWorker registered: ${registration.scope}`))
+      .catch(err => console.error(`ServiceWorker registration failed: ${err}`))
+      
+    return navigator.serviceWorker.ready;
   }
 
   registerBackgroundSync(registrationPromise) {
-    registrationPromise
-      .then(swRegistration => {
-        swRegistration
-          .sync
-          .register('gw-background')
-          .catch(err => console.log(`error ${err}`));
-      });
+    registrationPromise.then(swRegistration => {
+      swRegistration
+        .sync
+        .register('gw-background')
+        .catch(err => console.log(`error ${err}`));
+    });
   }
   
   ensureNotSubscribedAlready(swRegistration) {
@@ -146,13 +139,18 @@ class Container extends React.Component {
   subscribeSwForNotifications(swRegistration) {
     return fetch('/vapid')
       .then(response => response.json())
-      .then(({ publicKey }) => {
-        const applicationServerKey = this.urlBase64ToUint8Array(publicKey);
-        return swRegistration.pushManager.subscribe({
+      .then(({ publicKey }) => this.urlBase64ToUint8Array(publicKey))
+      .then(applicationServerKey => 
+        swRegistration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey
-        });
-      });
+        })
+      )
+      .then(swSubscription => {
+        console.log(`Successfully subscribed for push notifications: ${swSubscription}`);
+        return swSubscription;
+      })
+      .catch(err => console.error('dupa', err));
   }
   
   updateSubscriptionOnServer(swSubscription) {
@@ -222,15 +220,19 @@ class Container extends React.Component {
     });
   }
   
-  componentDidMount() {
+  componentWillMount() {
     const swRegistration = this.registerSW();
     this.registerBackgroundSync(swRegistration);
     this.subscribeForPushNotifications(swRegistration);
-    
-    setInterval(
-      () => this.updateRoom().then(this.updateChat.bind(this)),
-      5000
-    );
+    // TODO handle unsubscribe, etc.
+  }
+  
+  componentDidMount() {
+    // setInterval(
+    //   () => this.updateRoom().then(this.updateChat.bind(this)),
+    //   5000
+    // );
+    // TODO deregister when componentWillUnmount
   }
 
   render() {

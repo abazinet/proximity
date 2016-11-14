@@ -11,6 +11,7 @@ let participants = []; // the room is empty at this stage
 const roomSize = 1000; // TODO consider some reasonable value
 
 const vapidKeys = webpush.generateVAPIDKeys();
+webpush.setGCMAPIKey('AIzaSyD94NpyTWXSYXTV3mLl1F-xPS7Dr2x2vZ4');
 webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
@@ -47,9 +48,15 @@ function groomParticipants(chatter) {
 
 function sendMsg(receiver, msg) {
   if (!receiver.subscription) {
-    throw new Error(`User ${receiver.name} not subscribed properly. Cannot notify`);
+    console.error(`User ${receiver.name} not subscribed properly. Cannot send notification.`);
+    return;
   }
-  webpush.sendNotification(receiver.subscription, msg);
+  
+  webpush.sendNotification(receiver.subscription, msg)
+    .then(  
+      () => console.log(`Sent ${msg} to ${receiver.name}`),
+      err => console.error(`Could not sent ${msg} to ${receiver.name}. Reason ${err}`)
+    );
 }
 
 app.set('port', (process.env.PORT || 3000));
@@ -103,9 +110,7 @@ app.post('/post', (request, response) => {
 
   const msgReceivers = getChatFolks(chatter);
   msgReceivers.forEach(person => sendMsg(person, msg));
-
-  console.log('Sent: ' + msg + ' to ' + msgReceivers.map(p => p.name));
-
+  
   response.send('ok');
 });
 
