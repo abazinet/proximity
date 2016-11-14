@@ -10,6 +10,14 @@ const app = express();
 let participants = []; // the room is empty at this stage
 const roomSize = 1000; // TODO consider some reasonable value
 
+const vapidKeys = webpush.generateVAPIDKeys();
+webpush.setVapidDetails(
+  'mailto:proximity@guidewire.com',
+  vapidKeys.publicKey,
+  vapidKeys.privateKey
+);
+
+
 function Person({ name, lat, long }) {
 	this.name = name;
 	this.lat = lat;
@@ -19,7 +27,6 @@ function Person({ name, lat, long }) {
 	  const currentTime = new Date().getTime();
 	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
 	};
-	this.vapid = null;
 	this.subscription = null;
 }
 
@@ -39,15 +46,9 @@ function groomParticipants(chatter) {
 }
 
 function sendMsg(receiver, msg) {
-  if (!receiver.vapid || !receiver.subscription) {
+  if (!receiver.subscription) {
     throw new Error(`User ${receiver.name} not subscribed properly. Cannot notify`);
   }
-  
-  webpush.setVapidDetails(
-    `mailto:${receiver.name}@guidewire.com`,
-    receiver.vapid.publicKey,
-    receiver.vapid.privateKey
-  );
   webpush.sendNotification(receiver.subscription, msg);
 }
 
@@ -67,6 +68,11 @@ app.get('/', (request, response) => {
   response.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/vapid', (request, response) => {
+  // definitely not appropriate for production ;)
+  response.send({ publicKey: vapidKeys.publicKey });
+});
+
 app.post('/locate', (request, response) => {
   console.log(request.body);
 
@@ -77,13 +83,7 @@ app.post('/locate', (request, response) => {
   const colleagues = getChatFolks(chatter);
   chatter = colleagues.find(person => person.name === chatter.name);
   
-  let data = { colleagues };
-  if (!chatter.vapidKeys) {
-    chatter.vapid = webpush.generateVAPIDKeys();
-    data.subscriptionKey = chatter.vapid.publicKey;
-  }
-  
-  response.send(data);
+  response.send(colleagues);
 });
 
 app.post('/subscribe', (request, response) => {

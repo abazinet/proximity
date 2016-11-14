@@ -86,27 +86,95 @@ class Container extends React.Component {
       ]
     };
   }
-
-  registerBackgroundSync() {
+  
+  registerSW() {
     if (!'serviceWorker' in navigator) {
       throw new Error('does your browser support service workers?');
     }
-
-    navigator
-      .serviceWorker
-      .register('service-worker.js')
-      .then(registration => console.log(`ServiceWorker registered: ${registration.scope}`))
-      .catch(err => console.error(`ServiceWorker registration failed: ${err}`));
     
-    navigator
-      .serviceWorker
-      .ready
-      .then(registration => {
-        registration
+    return new Promise((resolve, reject) => {
+      navigator
+        .serviceWorker
+        .register('service-worker.js')
+        .then(registration => { 
+          console.log(`Push ServiceWorker registered: ${registration.scope}`);
+          resolve(registration);
+        })
+        .catch(err => {
+          console.error(`ServiceWorker registration failed: ${err}`);
+          reject(err);
+        })
+    });
+  }
+
+  registerBackgroundSync(registrationPromise) {
+    registrationPromise
+      .then(swRegistration => {
+        swRegistration
           .sync
           .register('gw-background')
           .catch(err => console.log(`error ${err}`));
       });
+  }
+  
+  ensureNotSubscribedAlready(swRegistration) {
+    return swRegistration.pushManager.getSubscription()
+      .then(subcription => {
+        if (subcription) {
+          return Promise.reject('Subscription already settled')
+        } else {
+          return Promise.resolve(swRegistration);
+        }
+      });
+  }
+  
+  urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+  
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+  
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  
+  subscribeSwForNotifications(swRegistration) {
+    return fetch('/vapid')
+      .then(response => response.json())
+      .then(({ publicKey }) => {
+        const applicationServerKey = this.urlBase64ToUint8Array(publicKey);
+        return swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey
+        });
+      });
+  }
+  
+  updateSubscriptionOnServer(swSubscription) {
+    const data = {
+      name: this.state.myName,
+      subscription: swSubscription
+    };
+    
+    return fetch('/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  }
+  
+  subscribeForPushNotifications(registrationPromise) {
+   registrationPromise
+      .then(swRegistration => this.ensureNotSubscribedAlready(swRegistration))
+      .then(swRegistration => this.subscribeSwForNotifications(swRegistration))
+      .then(swSubscription => this.updateSubscriptionOnServer(swSubscription))
+      .then(() => console.log('User successfuly subscribed for push notifications'))
+      .catch(err => console.error('Push notifications error', err));
   }
   
   getLocation() {
@@ -153,12 +221,12 @@ class Container extends React.Component {
       participantNames: newNames
     });
   }
-
-  componentWillMount() {
-    this.registerBackgroundSync();
-  }
   
   componentDidMount() {
+    const swRegistration = this.registerSW();
+    this.registerBackgroundSync(swRegistration);
+    this.subscribeForPushNotifications(swRegistration);
+    
     setInterval(
       () => this.updateRoom().then(this.updateChat.bind(this)),
       5000
