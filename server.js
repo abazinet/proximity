@@ -11,7 +11,6 @@ let participants = []; // the room is empty at this stage
 const roomSize = 1000; // TODO consider some reasonable value
 
 const vapidKeys = webpush.generateVAPIDKeys();
-webpush.setGCMAPIKey('AIzaSyD94NpyTWXSYXTV3mLl1F-xPS7Dr2x2vZ4');
 webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
@@ -95,6 +94,7 @@ app.post('/locate', (request, response) => {
 
 app.post('/subscribe', (request, response) => {
   const { name, subscription } = request.body;
+  console.log(`subscribe ${name}`);
   
   const chatter = participants.find(person => person.name === name);
   if (chatter) {

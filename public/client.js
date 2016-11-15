@@ -111,6 +111,8 @@ class Container extends React.Component {
   }
   
   ensureNotSubscribedAlready(swRegistration) {
+    console.log('ensureNotSubscribedAlready');
+    
     return swRegistration.pushManager.getSubscription()
       .then(subcription => {
         if (subcription) {
@@ -137,23 +139,29 @@ class Container extends React.Component {
   }
   
   subscribeSwForNotifications(swRegistration) {
+    console.log('subscribeSwForNotifications');
+    
     return fetch('/vapid')
       .then(response => response.json())
       .then(({ publicKey }) => this.urlBase64ToUint8Array(publicKey))
-      .then(applicationServerKey => 
-        swRegistration.pushManager.subscribe({
+      .then(applicationServerKey => {
+        console.log('subscribePushManager');
+    
+        return swRegistration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey
         })
-      )
+      })
       .then(swSubscription => {
-        console.log(`Successfully subscribed for push notifications: ${swSubscription}`);
+        console.log('Successfully subscribed for push notifications: ', swSubscription);
         return swSubscription;
       })
       .catch(err => console.error('Error occured when trying to subscribe SW for push notifications', err));
   }
   
   updateSubscriptionOnServer(swSubscription) {
+    console.log('updateSubscriptionOnServer');
+    
     const data = {
       name: this.state.myName,
       subscription: swSubscription
@@ -213,21 +221,22 @@ class Container extends React.Component {
     console.log('room state: ', room);
     if (!room) return;
 
-    const newNames = room.colleagues.map(c => c.name);
-    newNames.push('proximity_bot')
-    this.setState({
-      participantNames: newNames
-    });
-  }
-  
-  componentWillMount() {
-    const swRegistration = this.registerSW();
-    this.registerBackgroundSync(swRegistration);
-    this.subscribeForPushNotifications(swRegistration);
-    // TODO handle unsubscribe, etc.
+    // FIXME
+    // const newNames = room.colleagues.map(c => c.name);
+    // newNames.push('proximity_bot')
+    // this.setState({
+    //   participantNames: newNames
+    // });
   }
   
   componentDidMount() {
+    const swRegistration = this.registerSW();
+    this.registerBackgroundSync(swRegistration);
+    
+    this.updateRoom()
+      .then(this.updateChat.bind(this))
+      .then(this.subscribeForPushNotifications.bind(this, swRegistration));
+    
     setInterval(
       () => this.updateRoom().then(this.updateChat.bind(this)),
       5000
