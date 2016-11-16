@@ -79,7 +79,7 @@ class Container extends React.Component {
       myName: Math.random().toString(36).slice(16), // TODO: ALEX: Persist the name in cache, cookie?
       lat: 0,
       long: 0,
-      participantNames: ['proximity_bot'], // TODO: ALEX: move to backend default bot + messages
+      participantNames: ['proximity_bot'],
       messages: [
         { name: 'proximity_bot', msg: 'welcome to proximity!'},
         { name: 'proximity_bot', msg: 'i love coffee, who else does?'},
@@ -108,19 +108,6 @@ class Container extends React.Component {
         .register('gw-background')
         .catch(err => console.log(`error ${err}`));
     });
-  }
-  
-  ensureNotSubscribedAlready(swRegistration) {
-    console.log('ensureNotSubscribedAlready');
-    
-    return swRegistration.pushManager.getSubscription()
-      .then(subcription => {
-        if (subcription) {
-          return Promise.reject('Subscription already settled')
-        } else {
-          return Promise.resolve(swRegistration);
-        }
-      });
   }
   
   urlBase64ToUint8Array(base64String) {
@@ -152,16 +139,18 @@ class Container extends React.Component {
           applicationServerKey
         })
       })
-      .then(swSubscription => {
-        console.log('Successfully subscribed for push notifications: ', swSubscription);
-        return swSubscription;
-      })
       .catch(err => console.error('Error occured when trying to subscribe SW for push notifications', err));
+  }
+  
+  ensureSubscribedForNotifications(swRegistration) {
+    console.log('ensureSubscribedForNotifications');
+    return swRegistration.pushManager.getSubscription()
+      .then(subscription => subscription ? Promise.resolve(subscription) : this.subscribeSwForNotifications(swRegistration));
   }
   
   updateSubscriptionOnServer(swSubscription) {
     console.log('updateSubscriptionOnServer');
-    
+
     const data = {
       name: this.state.myName,
       subscription: swSubscription
@@ -171,15 +160,14 @@ class Container extends React.Component {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
-    });
+    }).then(() => swSubscription);
   }
   
   subscribeForPushNotifications(registrationPromise) {
    registrationPromise
-      .then(swRegistration => this.ensureNotSubscribedAlready(swRegistration))
-      .then(swRegistration => this.subscribeSwForNotifications(swRegistration))
+      .then(swRegistration => this.ensureSubscribedForNotifications(swRegistration))
       .then(swSubscription => this.updateSubscriptionOnServer(swSubscription))
-      .then(() => console.log('User successfuly subscribed for push notifications'))
+      .then(swSubscription => console.log('User successfuly subscribed for push notifications', swSubscription))
       .catch(err => console.error('Push notifications error', err));
   }
   
@@ -235,13 +223,17 @@ class Container extends React.Component {
     
     this.updateRoom()
       .then(this.updateChat.bind(this))
-      .then(this.subscribeForPushNotifications.bind(this, swRegistration));
-    
-    setInterval(
+      .then(this.subscribeForPushNotifications.bind(this, swRegistration))
+      
+    const intervalId = setInterval(
       () => this.updateRoom().then(this.updateChat.bind(this)),
       5000
     );
-    // TODO deregister when componentWillUnmount
+    this.setState({ intervalId })
+  }
+  
+  componentWillUnmount() {
+    clearInterval(this.state.intervalId);
   }
 
   render() {

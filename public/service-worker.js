@@ -13,20 +13,36 @@ self.addEventListener('sync',  event => {
 });
 
 self.addEventListener('push', event => {
-  // TODO impl
+  const data = event.data.text();
   const options = {
-    body: `${event.data.text()}`,
-    icon: 'images/icon.png',
-    badge: 'images/badge.png'
+    body: `${data.author} says: ${data.text}`,
+    icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
+    badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
   };
+  
+  // TODO Tomek: do not open notification when app's window is opened
   event.waitUntil(self.registration.showNotification('Proximity Chat message', options));
 });
 
 self.addEventListener('notificationclick', function(event) {
-  // TODO impl
-  console.log('[Service Worker] Notification click Received.');
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow('https://google.com')
+
+	// This looks to see if any windows are open and tries to focus one.
+	// Otherwise it just opens a new window.
+	event.waitUntil(
+    clients.matchAll({
+      type: 'window'
+    })
+  	.then(clientsList => {
+      for (const client of clientsList) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+  		
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
   );
 });

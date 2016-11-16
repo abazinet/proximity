@@ -6,8 +6,7 @@ const webpush = require('web-push');
 const _ = require('lodash');
 const app = express();
 
-// TODO: ALEX: Switch to a participants map with key being the name of the participant
-let participants = []; // the room is empty at this stage
+let participants = new Map();
 const roomSize = 1000; // TODO consider some reasonable value
 
 const vapidKeys = webpush.generateVAPIDKeys();
@@ -16,7 +15,6 @@ webpush.setVapidDetails(
   vapidKeys.publicKey,
   vapidKeys.privateKey
 );
-
 
 function Person({ name, lat, long }) {
 	this.name = name;
@@ -27,6 +25,10 @@ function Person({ name, lat, long }) {
 	  const currentTime = new Date().getTime();
 	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
 	};
+	this.update = rhs => {
+	  this.lat = rhs.lat;
+	  this.long = rhs.long;
+	}
 	this.subscription = null;
 }
 
@@ -35,14 +37,20 @@ function calcDistance(aLat, aLong, bLat, bLong) {
 }
 
 function getChatFolks(chatter) {
-  return participants.filter(
-    person => calcDistance(person.lat, person.long, chatter.lat, chatter.long) <= roomSize
+  console.log('cc' + JSON.stringify(participants));
+  return new Map(
+    [...participants]
+    .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSize)
   );
 }
 
-function groomParticipants(chatter) {
-  participants = participants.filter( p => p.name !== chatter.name || !p.stale());
-  participants.push(chatter);
+function groomParticipants() {
+  console.log('bb' + JSON.stringify(participants));
+  participants = new Map(
+    [...participants]
+    .filter(([k, p]) => !p.stale())
+  );
+  console.log('aa' + JSON.stringify(participants));
 }
 
 function sendMsg(receiver, msg) {
@@ -86,9 +94,15 @@ app.post('/locate', (request, response) => {
   
   groomParticipants(chatter);
   
+  const existing = participants.get(chatter.name);
+
+  if (existing) {
+    existing.update(chatter);
+  } else {
+    participants.set(chatter.name, chatter);
+  }
+
   const colleagues = getChatFolks(chatter);
-  chatter = colleagues.find(person => person.name === chatter.name);
-  
   response.send(colleagues);
 });
 
@@ -96,21 +110,23 @@ app.post('/subscribe', (request, response) => {
   const { name, subscription } = request.body;
   console.log(`subscribe ${name}`);
   
-  const chatter = participants.find(person => person.name === name);
+  const chatter = participants.get(name);
   if (chatter) {
     chatter.subscription = subscription;
   }
-  
+
   response.send('ok');
 });
 
 app.post('/post', (request, response) => {
   const chatter = new Person(request.body);
-  const msg = request.body.msg;
-
   const msgReceivers = getChatFolks(chatter);
-  msgReceivers.forEach(person => sendMsg(person, msg));
+  const msg = {
+    author: chatter.name,
+    text: request.body.msg
+  };
   
+  msgReceivers.forEach(person => sendMsg(person, JSON.stringify(msg)));
   response.send('ok');
 });
 
