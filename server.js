@@ -17,17 +17,21 @@ webpush.setVapidDetails(
 );
 
 function Person({ name, lat, long }) {
+  const now  = () => new Date().getTime();
+
 	this.name = name;
 	this.lat = lat;
 	this.long = long;
-	this.lastUpdate = new Date().getTime();
+	this.lastUpdate = now();
+	
 	this.stale = () => {
-	  const currentTime = new Date().getTime();
+	  const currentTime = now();
 	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
 	};
 	this.update = rhs => {
 	  this.lat = rhs.lat;
 	  this.long = rhs.long;
+	  this.lateUpdate = now();
 	}
 	this.subscription = null;
 }
@@ -37,7 +41,6 @@ function calcDistance(aLat, aLong, bLat, bLong) {
 }
 
 function getChatFolks(chatter) {
-  console.log('cc' + JSON.stringify(participants));
   return new Map(
     [...participants]
     .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSize)
@@ -45,12 +48,10 @@ function getChatFolks(chatter) {
 }
 
 function groomParticipants() {
-  console.log('bb' + JSON.stringify(participants));
   participants = new Map(
     [...participants]
     .filter(([k, p]) => !p.stale())
   );
-  console.log('aa' + JSON.stringify(participants));
 }
 
 function sendMsg(receiver, msg) {
@@ -102,8 +103,9 @@ app.post('/locate', (request, response) => {
     participants.set(chatter.name, chatter);
   }
 
-  const colleagues = getChatFolks(chatter);
-  response.send(colleagues);
+  let colleagues = getChatFolks(chatter);
+  colleagues = [...colleagues.values()];
+  response.send({ colleagues });
 });
 
 app.post('/subscribe', (request, response) => {

@@ -187,34 +187,34 @@ class Container extends React.Component {
         this.setState({lat: position.coords.latitude, long: position.coords.longitude });
         return position;
       }).then(
-      position => {
-        const data = {
-          name: this.state.myName,
-          lat: position.coords.latitude,
-          long: position.coords.longitude,
-        };
-  
-        return fetch('/locate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        })
-        .then(res => res.json());
-      },
-      error => console.log('Error while getting current position: ', error)
-    );
+        position => {
+          const data = {
+            name: this.state.myName,
+            lat: position.coords.latitude,
+            long: position.coords.longitude,
+          };
+    
+          return fetch('/locate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+          .then(res => res.json());
+        },
+        error => console.log('Error while getting current position: ', error)
+      );
   }
 
   updateChat(room) {
     console.log('room state: ', room);
     if (!room) return;
+  
 
-    // FIXME
-    // const newNames = room.colleagues.map(c => c.name);
-    // newNames.push('proximity_bot')
-    // this.setState({
-    //   participantNames: newNames
-    // });
+    const newNames = room.colleagues.map(c => c.name);
+    newNames.push('proximity_bot')
+    this.setState({
+      participantNames: newNames
+    });
   }
   
   componentDidMount() {
