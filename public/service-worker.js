@@ -19,7 +19,9 @@ self.addEventListener('fetch', event => {
     caches.open('proximity-cache').then(cache => {
       return cache.match(event.request).then(response => {
         return response || fetch(event.request).then(response => {
-          cache.put(event.request, response.clone());
+          if (event.request.method !== 'POST') {
+            cache.put(event.request, response.clone());
+          }
           return response;
         });
       });
@@ -39,9 +41,10 @@ self.addEventListener('push', event => {
       .then(swClients => {
         // show notifications only if there is no visible client at the moment
         if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
+          swClients.forEach(c => c.postMesssage(`${data.author} says: ${data.text}`));
           return;
         }
-        
+
         const data = event.data.json();
         const options = {
           body: `${data.author} says: ${data.text}`,

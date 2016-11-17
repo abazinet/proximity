@@ -13,7 +13,7 @@ const vapidKeys = webpush.generateVAPIDKeys();
 webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
-  vapidKeys.privateKey
+  vapidKeys.privateKey 
 );
 
 function Person({ name, lat, long }) {

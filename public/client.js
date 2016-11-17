@@ -98,6 +98,12 @@ class Container extends React.Component {
       .then(registration => console.log(`Push ServiceWorker registered: ${registration.scope}`))
       .catch(err => console.error(`ServiceWorker registration failed: ${err}`))
       
+    navigator
+      .serviceWorker
+      .addEventListener('message', event => {
+        console.log("Client 1 Received Message: " + event.data);
+    });
+
     return navigator.serviceWorker.ready;
   }
 
