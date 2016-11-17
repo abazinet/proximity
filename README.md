@@ -1,2 +1,4 @@
-# proximity
-kdc js meetup app
+Proximity
+============================
+
+Proximity based chat

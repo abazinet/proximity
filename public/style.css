@@ -1,0 +1,32 @@
+h1 {
+  text-align: center;
+}
+
+button {
+  display: block;
+  width: 100%;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.left {
+  border-radius: 3px;
+  list-style-type: none;
+  flex: 1 50px;
+  min-width: 0;
+  background: #999966;
+  padding: 15px 0;
+}
+
+.right {
+  border-radius: 5px;
+  list-style-type: none;
+  flex: 1 300px;
+  background: #cccccc;
+  padding: 15px 0;
+}

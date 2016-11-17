@@ -1,0 +1,23 @@
+{
+	"name": "proximity",
+	"version": "0.0.1",
+	"description": "A proximity based chat",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"express": "^4.14.0",
+		"lodash": "~4.16.6",
+		"body-parser": "^1.4.3",
+		"web-push": "^3.2.0"
+	},
+	"engines": {
+		"node": "4.4.5"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/abazinet/proximity"
+	},
+	"license": "MIT"
+}
