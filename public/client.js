@@ -103,7 +103,6 @@ class Container extends React.Component {
       .addEventListener('message', event => {
         const msgs = this.state.messages.slice();
         msgs.push(event.data);
-        console.log(JSON.stringify(msgs));
         this.setState({ messages: msgs });
     });
 
@@ -217,7 +216,6 @@ class Container extends React.Component {
   updateChat(room) {
     console.log('room state: ', room);
     if (!room) return;
-  
 
     const newNames = room.colleagues.map(c => c.name);
     newNames.push('proximity_bot')
