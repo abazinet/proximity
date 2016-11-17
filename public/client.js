@@ -19,7 +19,7 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map(message => <li key={ message.name + message.msg }>{ message.name + ':' + message.msg }</li>);
+    const list = this.props.messages.map(message => <li key={ message.author + message.text }>{ message.author + ':' + message.text }</li>);
     return <ul className="right">{ list }</ul>;
   }
 }
@@ -81,8 +81,8 @@ class Container extends React.Component {
       long: 0,
       participantNames: ['proximity_bot'],
       messages: [
-        { name: 'proximity_bot', msg: 'welcome to proximity!'},
-        { name: 'proximity_bot', msg: 'i love coffee, who else does?'},
+        { author: 'proximity_bot', text: 'welcome to proximity!'},
+        { author: 'proximity_bot', text: 'i love coffee, who else does?'},
       ]
     };
   }
@@ -101,7 +101,10 @@ class Container extends React.Component {
     navigator
       .serviceWorker
       .addEventListener('message', event => {
-        console.log("Client 1 Received Message: " + event.data);
+        const msgs = this.state.messages.slice();
+        msgs.push(event.data);
+        console.log(JSON.stringify(msgs));
+        this.setState({ messages: msgs });
     });
 
     return navigator.serviceWorker.ready;

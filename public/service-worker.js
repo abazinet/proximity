@@ -39,13 +39,14 @@ self.addEventListener('push', event => {
     clients
       .matchAll({ includeUncontrolled: true, type: 'window' })
       .then(swClients => {
+        const data = event.data.json();
+
         // show notifications only if there is no visible client at the moment
         if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
-          swClients.forEach(c => c.postMesssage(`${data.author} says: ${data.text}`));
+          swClients.forEach(c  => c.postMessage(data));
           return;
         }
 
-        const data = event.data.json();
         const options = {
           body: `${data.author} says: ${data.text}`,
           icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
