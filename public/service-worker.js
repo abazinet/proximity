@@ -29,9 +29,14 @@ self.addEventListener('fetch', event => {
   );
 });
 
+function sendEverythingInTheOutbox() {
+  console.log('sendEverythingInTheOutbox');
+}
+
 self.addEventListener('sync',  event => {
-  console.log('background sync');
-  //event.waitUntil();
+  if (event.tag === 'gw-background') {
+    event.waitUntil(sendEverythingInTheOutbox());
+  }
 });
 
 self.addEventListener('push', event => {

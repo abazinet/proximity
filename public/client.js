@@ -32,7 +32,7 @@ class SendMessage extends React.Component {
     this.state = { msg: '', disabled: false};
   }
 
-  sendMsg() {
+  sendMsg() { 
     this.setState({ disabled: true });
 
     fetch('/post', {
@@ -42,6 +42,9 @@ class SendMessage extends React.Component {
     }).then(() => {
       this.setState({ msg: '', disabled: false });
       ReactDOM.findDOMNode(this.refs.sendMsg).focus();
+    }).catch(err => {
+      console.log(err);
+      this.setState({ disabled: False });
     });
   }
 
@@ -108,14 +111,12 @@ class Container extends React.Component {
 
     return navigator.serviceWorker.ready;
   }
-
-  registerBackgroundSync(registrationPromise) {
-    registrationPromise.then(swRegistration => {
-      swRegistration
-        .sync
-        .register('gw-background')
-        .catch(err => console.log(`error ${err}`));
-    });
+  
+  registerBackgroundSync(registrationPromise, tag) {
+    console.log('registerBackgroundSync', tag);
+    return registrationPromise
+      .then(swRegistration => swRegistration.sync.register(tag))
+      .catch(err => console.error(`[${tag}] Background sync registration error`, err));
   }
   
   urlBase64ToUint8Array(base64String) {
@@ -224,9 +225,14 @@ class Container extends React.Component {
     });
   }
   
+  onSend(msg) {
+        this.registerBackgroundSync(swRegistration);
+
+  }
+  
   componentDidMount() {
     const swRegistration = this.registerSW();
-    this.registerBackgroundSync(swRegistration);
+    this.setState({ swRegistration });
     
     this.updateRoom()
       .then(this.updateChat.bind(this))
@@ -251,7 +257,7 @@ class Container extends React.Component {
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long }/>
+        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long } onSend={ }/>
       </div>
     );
   }
