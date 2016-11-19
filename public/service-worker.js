@@ -1,3 +1,5 @@
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.3/localforage.min.js');
+
 self.addEventListener('install', event => {
   console.log('install event', event);
 });
@@ -29,20 +31,27 @@ self.addEventListener('fetch', event => {
   );
 });
 
-function sendEverythingInTheOutbox() {
-  console.log('sendEverythingInTheOutbox');
-  
-  return fetch('/post', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ msg: 'example-msg' })
+function sendEverythingInTheOutbox(messageQueue) {
+  messageQueue.messages.forEach(msg => {
+    fetch('/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(msg)
+    });
   });
+  return Promise.resolve();
 }
 
 self.addEventListener('sync',  event => {
-  if (event.tag === 'gwMessage') {
-    event.waitUntil(sendEverythingInTheOutbox());
+  if (event.tag !== 'gwMessage') {
+    return;
   }
+    
+  event.waitUntil(
+    localforage.getItem('outbox')
+      .then(sendEverythingInTheOutbox)
+      .then(() => localforage.setItem('outbox', { messages: [] }))
+  );
 });
 
 self.addEventListener('push', event => {

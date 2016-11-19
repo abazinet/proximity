@@ -28,13 +28,12 @@ class Messages extends React.Component {
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
-    this.defaultProp = { name: 'missing_name', lat: 0, long: 0};
     this.state = { msg: '', disabled: false};
   }
 
   sendMsg() { 
     this.setState({ disabled: true });
-    this.props.onSend()
+    this.props.onSend(this.state.msg)
       .then(() => {
         this.setState({ msg: '', disabled: false });
         ReactDOM.findDOMNode(this.refs.sendMsg).focus();
@@ -225,9 +224,19 @@ class Container extends React.Component {
   }
   
   onSend(msg) {
-    console.log('onSend', msg);
-    // TODO pass a message to SW somehow
-    return this.registerBackgroundSync('gwMessage');
+    return localforage.getItem('outbox')
+      .then(messageQueue => {
+        messageQueue = messageQueue || { messages: [] };
+        messageQueue.messages.push({
+          name: this.state.myName,
+          lat: this.state.lat,
+          long: this.state.long,
+          msg
+        });
+        return messageQueue
+      })
+      .then(messageQueue => localforage.setItem('outbox', messageQueue))
+      .then(() => this.registerBackgroundSync('gwMessage'));
   }
   
   componentDidMount() {
@@ -257,7 +266,7 @@ class Container extends React.Component {
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long } onSend={ this.onSend.bind(this) }/>
+        <SendMessage onSend={ this.onSend.bind(this) }/>
       </div>
     );
   }
