@@ -31,10 +31,16 @@ self.addEventListener('fetch', event => {
 
 function sendEverythingInTheOutbox() {
   console.log('sendEverythingInTheOutbox');
+  
+  return fetch('/post', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ msg: 'example-msg' })
+  });
 }
 
 self.addEventListener('sync',  event => {
-  if (event.tag === 'gw-background') {
+  if (event.tag === 'gwMessage') {
     event.waitUntil(sendEverythingInTheOutbox());
   }
 });

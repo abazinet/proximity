@@ -34,18 +34,14 @@ class SendMessage extends React.Component {
 
   sendMsg() { 
     this.setState({ disabled: true });
-
-    fetch('/post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg: this.state.msg, ...this.props})
-    }).then(() => {
-      this.setState({ msg: '', disabled: false });
-      ReactDOM.findDOMNode(this.refs.sendMsg).focus();
-    }).catch(err => {
-      console.log(err);
-      this.setState({ disabled: False });
-    });
+    this.props.onSend()
+      .then(() => {
+        this.setState({ msg: '', disabled: false });
+        ReactDOM.findDOMNode(this.refs.sendMsg).focus();
+      }).catch(err => {
+        console.log(err);
+        this.setState({ disabled: False });
+      });
   }
 
   onChange(evt) {
@@ -112,13 +108,6 @@ class Container extends React.Component {
     return navigator.serviceWorker.ready;
   }
   
-  registerBackgroundSync(registrationPromise, tag) {
-    console.log('registerBackgroundSync', tag);
-    return registrationPromise
-      .then(swRegistration => swRegistration.sync.register(tag))
-      .catch(err => console.error(`[${tag}] Background sync registration error`, err));
-  }
-  
   urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
@@ -172,8 +161,9 @@ class Container extends React.Component {
     }).then(() => swSubscription);
   }
   
-  subscribeForPushNotifications(registrationPromise) {
-   registrationPromise
+  subscribeForPushNotifications() {
+   const { registrationPromise } = this.state;
+   return registrationPromise
       .then(swRegistration => this.ensureSubscribedForNotifications(swRegistration))
       .then(swSubscription => this.updateSubscriptionOnServer(swSubscription))
       .then(swSubscription => console.log('User successfuly subscribed for push notifications', swSubscription))
@@ -225,18 +215,28 @@ class Container extends React.Component {
     });
   }
   
+  registerBackgroundSync(tag) {
+    console.log('registerBackgroundSync', tag);
+    const { registrationPromise } = this.state;
+    return registrationPromise.then(
+      swRegistration => swRegistration.sync.register(tag),
+      err => console.error(`[${tag}] Background sync registration error`, err)
+    );
+  }
+  
   onSend(msg) {
-        this.registerBackgroundSync(swRegistration);
-
+    console.log('onSend', msg);
+    // TODO pass a message to SW somehow
+    return this.registerBackgroundSync('gwMessage');
   }
   
   componentDidMount() {
-    const swRegistration = this.registerSW();
-    this.setState({ swRegistration });
+    const registrationPromise = this.registerSW();
+    this.setState({ registrationPromise });
     
     this.updateRoom()
       .then(this.updateChat.bind(this))
-      .then(this.subscribeForPushNotifications.bind(this, swRegistration))
+      .then(this.subscribeForPushNotifications.bind(this))
       
     const intervalId = setInterval(
       () => this.updateRoom().then(this.updateChat.bind(this)),
@@ -257,7 +257,7 @@ class Container extends React.Component {
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long } onSend={ }/>
+        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long } onSend={ this.onSend.bind(this) }/>
       </div>
     );
   }
