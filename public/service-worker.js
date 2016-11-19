@@ -1,3 +1,5 @@
+// we are using external library cause service workers have access only to indexedDB by design
+// while it's just nice to have some high-level API to access the storage
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.3/localforage.min.js');
 
 self.addEventListener('install', event => {
