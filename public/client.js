@@ -246,9 +246,9 @@ class Container extends React.Component {
     this.updateRoom()
       .then(this.updateChat.bind(this))
       .then(this.subscribeForPushNotifications.bind(this))
-      
+
     const intervalId = setInterval(
-      () => this.updateRoom().then(this.updateChat.bind(this)),
+      () => this.updateRoom().then(this.updateChat.bind(this)).then(this.subscribeForPushNotifications.bind(this)),
       5000
     );
     this.setState({ intervalId })
