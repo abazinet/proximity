@@ -23,12 +23,6 @@ function Person({ name, lat, long }) {
 	this.lat = lat;
 	this.long = long;
 	this.lastUpdate = now();
-	
-	this.stale = () => {
-	  const currentTime = now();
-	  return (currentTime - this.lastUpdate) > 30 * 1000; // 30 seconds
-	};
-
 	this.update = rhs => {
 	  this.lat = rhs.lat;
 	  this.long = rhs.long;
@@ -56,13 +50,6 @@ function getChatFolks(chatter) {
   return new Map(
     [...participants]
     .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSizeMeters)
-  );
-}
-
-function groomParticipants() {
-  participants = new Map(
-    [...participants]
-    .filter(([k, p]) => !p.stale())
   );
 }
 
@@ -104,9 +91,7 @@ app.post('/locate', (request, response) => {
   console.log(request.body);
 
   let chatter = new Person(request.body);
-  
-  groomParticipants(chatter);
-  
+
   const existing = participants.get(chatter.name);
 
   if (existing) {
