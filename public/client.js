@@ -39,7 +39,7 @@ class SendMessage extends React.Component {
         ReactDOM.findDOMNode(this.refs.sendMsg).focus();
       }).catch(err => {
         console.log(err);
-        this.setState({ disabled: False });
+        this.setState({ disabled: false });
       });
   }
 
@@ -74,7 +74,7 @@ class Container extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      myName: Math.random().toString(36).slice(16), // TODO: ALEX: Persist the name in cache, cookie?
+      myName: Math.random().toString(36).slice(16),
       lat: 0,
       long: 0,
       participantNames: ['proximity_bot'],

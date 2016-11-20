@@ -74,7 +74,7 @@ self.addEventListener('push', event => {
           icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
           badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
         };
-        self.registration.showNotification('Proximity Chat message', options);
+        self.registration.showNotification('Proximity Chat Message', options);
       })
   );
 });
