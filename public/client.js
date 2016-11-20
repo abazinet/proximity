@@ -19,7 +19,7 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map(message => <li key={ message.author + message.text }>{ message.author + ':' + message.text }</li>);
+    const list = this.props.messages.map((message, index) => <li key={ index }>{ message.author + ':' + message.text }</li>);
     return <ul className="right">{ list }</ul>;
   }
 }
@@ -84,7 +84,7 @@ class Container extends React.Component {
       ]
     };
   }
-  
+
   registerSW() {
     if (!'serviceWorker' in navigator) {
       throw new Error('does your browser support service workers?');

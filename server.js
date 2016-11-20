@@ -13,7 +13,7 @@ const vapidKeys = webpush.generateVAPIDKeys();
 webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
-  vapidKeys.privateKey 
+  vapidKeys.privateKey
 ); 
 
 function Person({ name, lat, long }) {
@@ -34,7 +34,7 @@ function Person({ name, lat, long }) {
 	  this.long = rhs.long;
 	  this.lateUpdate = now();
 	}
-	this.subscription = null;
+	this.subscription = null; 
 }
 
 function calcDistance(lat1,lon1,lat2,lon2) {
