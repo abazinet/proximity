@@ -26,7 +26,7 @@ function Person({ name, lat, long }) {
 	
 	this.stale = () => {
 	  const currentTime = now();
-	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000; // 5 min
+	  return (currentTime - this.lastUpdate) > 30 * 1000; // 30 seconds
 	};
 
 	this.update = rhs => {
