@@ -14,7 +14,7 @@ webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
   vapidKeys.privateKey
-); 
+);
 
 function Person({ name, lat, long }) {
   const now  = () => new Date().getTime();
