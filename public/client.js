@@ -261,7 +261,7 @@ class Container extends React.Component {
   render() {
     return (
       <div>
-        <h1>Proximity</h1>
+        <h1>proximity ({ this.state.myName })</h1>
         <div className="container">
           <Participants names={ this.state.participantNames } />
           <Messages messages={ this.state.messages } />

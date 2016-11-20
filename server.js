@@ -73,10 +73,10 @@ function sendMsg(receiver, msg) {
   }
   
   webpush.sendNotification(receiver.subscription, msg)
-    .then(  
-      () => console.log(`Sent ${msg} to ${receiver.name}`),
-      err => console.error(`Could not sent ${msg} to ${receiver.name}. Reason ${err}`)
-    );
+    .then(() => console.log(`Sent ${msg} to ${receiver.name}`))
+    .catch(err => {
+      console.error(`Could not sent ${msg} to ${receiver.name}. Reason ${err}`);
+    });
 }
 
 app.set('port', (process.env.PORT || 3000));
