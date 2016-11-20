@@ -35,6 +35,7 @@ h1 {
   flex-grow: 1;
   margin-right: 5px;
   height: 60px;
+  border-radius: 10px;
 }
 
 .sendButton {
@@ -43,4 +44,5 @@ h1 {
   padding: 20px;
   background-image: linear-gradient(#cccccc, #000);
   color: #fff;
+  border-radius: 10px;
 }
