@@ -54,8 +54,9 @@ class SendMessage extends React.Component {
   }
 
   render() {
-    return <div>
-      <input type="text"
+    return <div className="sendContainer">
+      <input className="sendText"
+             type="text"
              autoFocus
              value={ this.state.msg }
              disabled={ this.state.disabled }
@@ -64,7 +65,7 @@ class SendMessage extends React.Component {
              onChange={ this.onChange.bind(this) }
              onKeyPress={ this.handleOnKeyPress.bind(this) }>
       </input>
-      <button onClick={ this.sendMsg.bind(this) }>Send</button>
+      <button className="sendButton" onClick={ this.sendMsg.bind(this) }>Send</button>
     </div>;
   }
 }

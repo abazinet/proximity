@@ -2,12 +2,6 @@ h1 {
   text-align: center;
 }
 
-button {
-  display: block;
-  width: 100%;
-  font-weight: bold;
-}
-
 .container {
   display: flex;
   flex-wrap: wrap;
@@ -15,18 +9,38 @@ button {
 }
 
 .left {
-  border-radius: 3px;
+  border-radius: 20px;
   list-style-type: none;
   flex: 1 50px;
   min-width: 0;
   background: #999966;
-  padding: 15px 0;
+  margin: 20px;
 }
 
 .right {
-  border-radius: 5px;
+  border-radius: 20px;
   list-style-type: none;
   flex: 1 300px;
   background: #cccccc;
-  padding: 15px 0;
+  margin: 20px;
+}
+
+.sendContainer {
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+}
+
+.sendText {
+  flex-grow: 1;
+  margin-right: 5px;
+  height: 60px;
+}
+
+.sendButton {
+  width: inherit;
+  height: 60px;
+  padding: 20px;
+  background-image: linear-gradient(#cccccc, #000);
+  color: #fff;
 }
