@@ -99,7 +99,7 @@ class Container extends React.Component {
     navigator
       .serviceWorker
       .addEventListener('message', event => {
-        const msgs = this.state.messages.slice();
+        const msgs = this.state.messages.slice(-20);
         msgs.push(event.data);
         this.setState({ messages: msgs });
     });
