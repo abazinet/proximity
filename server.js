@@ -41,7 +41,7 @@ function calcDistance(lat1,lon1,lat2,lon2) {
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
     Math.sin(dLon/2) * Math.sin(dLon/2)
     ; 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const meters = R * c * 1000; 
   return meters;
 }
@@ -52,6 +52,7 @@ function getChatFolks(chatter) {
     .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSizeMeters)
   );
 }
+
 
 function sendMsg(receiver, msg) {
   if (!receiver.subscription) {
@@ -131,6 +132,6 @@ app.post('/post', (request, response) => {
 });
 
 // listen for requests :)
-listener = app.listen(process.env.PORT || 80, function () {
+listener = app.listen(process.env.PORT || 80, function () {		  
   console.log('Your app is listening on port ' + listener.address().port);
 });

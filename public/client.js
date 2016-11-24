@@ -240,10 +240,12 @@ class Container extends React.Component {
       .then(() => this.registerBackgroundSync('gwMessage'));
   }
   
-  componentDidMount() {
+  componentWillMount() {
     const registrationPromise = this.registerSW();
     this.setState({ registrationPromise });
-    
+  }
+  
+  componentDidMount() {
     this.updateRoom()
       .then(this.updateChat.bind(this))
       .then(this.subscribeForPushNotifications.bind(this))
