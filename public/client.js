@@ -74,8 +74,15 @@ class SendMessage extends React.Component {
 class Container extends React.Component {
   constructor(props) {
     super(props);
+    
+    let name = localStorage.getItem('name');
+    if (!name) {
+      name = Math.random().toString(36).slice(16);
+      localStorage.setItem('name', name);
+    }
+    
     this.state = {
-      myName: Math.random().toString(36).slice(16),
+      myName: name,
       lat: 0,
       long: 0,
       participantNames: ['proximity_bot'],
