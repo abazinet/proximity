@@ -174,7 +174,7 @@ class Container extends React.Component {
       .then(swRegistration => this.ensureSubscribedForNotifications(swRegistration))
       .then(swSubscription => this.updateSubscriptionOnServer(swSubscription))
       .then(swSubscription => console.log('User successfuly subscribed for push notifications', swSubscription))
-      .catch(err => console.error('Push notifications error', err));
+      .catch(err => console.log('Push notifications error', err));
   }
   
   getLocation() {
