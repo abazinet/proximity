@@ -22,7 +22,7 @@ function Person({ name, lat, long }) {
 	this.name = name;
 	this.lat = lat;
 	this.long = long;
-	this.lastUpdate = now();
+	this.lastUpdate = now(); 
 	this.update = rhs => {
 	  this.lat = rhs.lat;
 	  this.long = rhs.long;

@@ -98,6 +98,8 @@ self.addEventListener('push', event => {
       .then(swClients => {
         const data = event.data.json();
 
+        swClients.forEach(c  => c.postMessage(data));
+
         // show notifications only if there is no visible client at the moment
         if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
           return;
