@@ -74,23 +74,6 @@ class SendMessage extends React.Component {
 class Container extends React.Component {
   constructor(props) {
     super(props);
-    
-    let name = localStorage.getItem('name');
-    if (!name) {
-      name = Math.random().toString(36).slice(16);
-      localStorage.setItem('name', name);
-    }
-    
-    this.state = {
-      myName: name,
-      lat: 0,
-      long: 0,
-      participantNames: ['proximity_bot'],
-      messages: [
-        { author: 'proximity_bot', text: 'welcome to proximity!'},
-        { author: 'proximity_bot', text: 'i love coffee, who else does?'},
-      ]
-    };
   }
 
   registerSW() {
@@ -248,8 +231,31 @@ class Container extends React.Component {
   }
   
   componentWillMount() {
+    const getCookieValue = name => {
+      const found = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return found ? found.pop() : '';
+    }
+
+    let name = getCookieValue('proximity_name');
+    if (!name) {
+      name = Math.random().toString(36).slice(16);
+      document.cookie = `proximity_name=${name}`;
+    }
+
     const registrationPromise = this.registerSW();
-    this.setState({ registrationPromise });
+
+    this.state = {
+      registrationPromise,
+      myName: name,
+      lat: 0,
+      long: 0,
+      participantNames: ['proximity_bot'],
+      messages: [
+        { author: 'proximity_bot', text: 'welcome to proximity!'},
+        { author: 'proximity_bot', text: 'i love coffee, who else does?'},
+      ]
+    };
+    
   }
   
   componentDidMount() {
