@@ -4,13 +4,26 @@ Progressive Web Apps - Introduction Workshop
 TODO Before presentation
 -----------------------
 - Print out cards with URLs to follow and long (hyperdev and aws)
+- figure out the fallback android phone
+- figure out the fallback laptop with ssh access
+- buy cards for talking notes
+
+
+Equipment
+---------
+- wireless mouse
+- charged phone x 2
+- laptop x 2
+- cable
+
 
 
 Tech Setup Before
 -----------------
 
+- Startup phone screen share
+- Load up the slides
 - Clear phone cache | history -> clear browsing -> cookie, site, images
-- Clear phone location permission setting | history -> location -> allowed
 - Clear desktop site data for standing & aws
 - Clear service workers internal: chrome://serviceworker-internals
 - Refresh backends on aws and hyperdev
@@ -43,6 +56,20 @@ Native App Arguments
 
 Introducing Progressive Web Applications
 ----------------------------------------
+- mention native experience and ability to get close to it as much as possible
+- mention the basic concepts
+
+Workshop Application
+------------------------------------
+- web based chat
+- not downloading from the store
+- proximity based
+
+
+Geolocation
+-----------
+- Clear phone location permission setting | history -> location -> allowed
+
 
 Service workers
 ----------------------------------------
