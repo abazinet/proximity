@@ -7,7 +7,7 @@ const _ = require('lodash');
 const app = express();
 
 let participants = new Map();
-const roomSizeMeters = 200;
+const roomSizeMeters = 1000;
 
 const vapidKeys = webpush.generateVAPIDKeys();
 webpush.setVapidDetails(
@@ -43,6 +43,7 @@ function calcDistance(lat1,lon1,lat2,lon2) {
     ; 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const meters = R * c * 1000; 
+  console.log(meters);
   return meters;
 }
 
