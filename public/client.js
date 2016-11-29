@@ -81,11 +81,7 @@ class Container extends React.Component {
       throw new Error('does your browser support service workers?');
     }
     
-    navigator
-      .serviceWorker
-      .register('service-worker.js')
-      .then(registration => console.log(`Push ServiceWorker registered: ${registration.scope}`))
-      .catch(err => console.error(`ServiceWorker registration failed: ${err}`))
+    // TODO exercise-1b
       
     navigator
       .serviceWorker
@@ -161,13 +157,12 @@ class Container extends React.Component {
   }
   
   getLocation() {
-    return new Promise((resolve, reject) => {
-       navigator.geolocation
-        .getCurrentPosition(
-          resolve,
-          reject,
-          { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }
-        );
+    // TODO exercise-1a
+    return Promise.resolve({
+      coords: {
+        latitude: 0.0,
+        longitude: 0.0
+      }
     });
   }
   
