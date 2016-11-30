@@ -43,7 +43,6 @@ function calcDistance(lat1,lon1,lat2,lon2) {
     ; 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const meters = R * c * 1000; 
-  console.log(meters);
   return meters;
 }
 
@@ -114,7 +113,7 @@ app.post('/subscribe', (request, response) => {
   let chatter = participants.get(name);
   if (!chatter) {
     chatter = new Person({ name });
-  }
+  } 
   chatter.subscription = subscription;
 
   response.send('ok');
