@@ -19,19 +19,9 @@ const CACHEABLE_ASSETS = [
 ];
 
 function precache(files) {
-  return caches.open(DEMO_CACHE).then(cache => {
-      const cachePromises = files.map(urlToPrefetch => {
-        // It's very important to use {mode: 'no-cors'} if there is any chance that
-        // the resources being fetched are served off of a server that doesn't support it
-        const request = new Request(new URL(urlToPrefetch, location.href), { mode: 'no-cors' });
-        return fetch(request)
-          .then(response => cache.put(request, response.clone()))
-          .catch(error => console.error(`Not caching ${urlToPrefetch} due to ${error}`));
-      });
-
-      return Promise.all(cachePromises).then(() => console.log('Pre-fetching completed.'));
-    })
-    .catch(error => console.error('Pre-fetching failed:', error));
+  // TODO exercise-2a
+  // tip: remember to user Request with { mode: 'no-cors' }
+  return Promise.resolve();
 }
   
 self.addEventListener('install', event => {
@@ -39,33 +29,13 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if(cacheName === DEMO_CACHE) {
-            return Promise.resolve();
-          }
-          return caches.delete(cacheName);
-        })
-      );
-    })
-  );
+  // TODO exercise-2b
+  // tip: clear only stale caches
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.open(DEMO_CACHE).then(cache => {
-      return cache.match(event.request).then(response => {
-        return response || fetch(event.request).then(response => {
-          if (event.request.method !== 'POST') {
-            cache.put(event.request, response.clone());
-          }
-          return response;
-        });
-      });
-    })
-  );
+  // TODO exercise-2b
+  // tip: do not cache POST requests
 });
 
 function sendEverythingInTheOutbox(messageQueue) {
@@ -80,59 +50,15 @@ function sendEverythingInTheOutbox(messageQueue) {
 }
 
 self.addEventListener('sync',  event => {
-  if (event.tag !== 'gwMessage') {
-    return;
-  }
-    
-  event.waitUntil(
-    localforage.getItem('outbox')
-      .then(sendEverythingInTheOutbox)
-      .then(() => localforage.setItem('outbox', { messages: [] }))
-  );
+  // TODO exercise-2c
+  // tip: outbox content available through 'localforage.getItem('outbox')'
 });
 
 self.addEventListener('push', event => {
-  event.waitUntil(
-    clients
-      .matchAll({ includeUncontrolled: true, type: 'window' })
-      .then(swClients => {
-        const data = event.data.json();
-
-        swClients.forEach(c  => c.postMessage(data));
-
-        // show notifications only if there is no visible client at the moment
-        if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
-          return;
-        }
-
-        const options = {
-          body: `${data.author} says: ${data.text}`,
-          icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
-          badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
-        };
-        self.registration.showNotification('Proximity Chat Message', options);
-      })
-  );
+  // TODO exercise-3a
+  // tip: use 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png' as a badge/icon
 });
 
 self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-
-	event.waitUntil(
-    clients
-      .matchAll({ includeUncontrolled: true, type: 'window' })
-      .then(swClients => {
-      	// This looks to see if any client windows are open and tries to focus one
-        for (const client of swClients) {
-          if ('focus' in client) {
-            return client.focus();
-          }
-        }
-    
-    		// Anotherwise it just opens a new one
-        if (clients.openWindow) {
-          return clients.openWindow('/');
-        }
-      })
-  );
+  // TODO exercise-3b
 });
