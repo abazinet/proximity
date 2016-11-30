@@ -8,6 +8,7 @@ TODO Before presentation
 - figure out the fallback laptop with ssh access
 - buy cards for talking notes
 - connect phone to console to get phone debug
+- clone code locally with intellj presentation mode
 - 
 
 

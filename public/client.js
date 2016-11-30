@@ -6,7 +6,10 @@ class Participants extends React.Component {
   }
 
   render() {
-    const list = this.props.names.map(name => <li key={ name }>{ name }</li>);
+    const list = this.props.names.map(name => {
+      const li = <li key={ name }>{ name }</li>;
+      return (name === this.props.myName ? <strong>{ li }</strong> : li);
+    });
     return <ul className="left">{ list }</ul>;
   }
 }
@@ -19,7 +22,11 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map((message, index) => <li key={ index }>{ message.author + ':' + message.text }</li>);
+    const list = this.props.messages.map((message, index) =>
+      <li key={ index }>
+        <strong>{ message.author + ": " }</strong>
+        { message.text }
+      </li>);
     return <ul className="right">{ list }</ul>;
   }
 }
@@ -199,7 +206,7 @@ class Container extends React.Component {
     if (!room) return;
 
     const newNames = room.colleagues.map(c => c.name);
-    newNames.push('proximity_bot')
+    newNames.push('proximity')
     this.setState({
       participantNames: newNames
     });
@@ -249,10 +256,10 @@ class Container extends React.Component {
       myName: name,
       lat: 0,
       long: 0,
-      participantNames: ['proximity_bot'],
+      participantNames: ['proximity'],
       messages: [
-        { author: 'proximity_bot', text: 'welcome to proximity!'},
-        { author: 'proximity_bot', text: 'i love coffee, who else does?'},
+        { author: 'proximity', text: 'welcome to proximity!'},
+        { author: 'proximity', text: 'i love coffee, who else does?'},
       ]
     };
     
@@ -277,9 +284,9 @@ class Container extends React.Component {
   render() {
     return (
       <div>
-        <h1>proximity ({ this.state.myName })</h1>
+        <h1>proximity</h1>
         <div className="container">
-          <Participants names={ this.state.participantNames } />
+          <Participants names={ this.state.participantNames } myName={ this.state.myName } />
           <Messages messages={ this.state.messages } />
         </div>
         <SendMessage onSend={ this.onSend.bind(this) }/>
