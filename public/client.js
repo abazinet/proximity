@@ -7,8 +7,8 @@ class Participants extends React.Component {
 
   render() {
     const list = this.props.names.map(name => {
-      const li = <li key={ name }>{ name }</li>;
-      return (name === this.props.myName ? <strong>{ li }</strong> : li);
+      const display = name === this.props.myName ? <strong>{ name }</strong> : name;
+      return <li key={ name }>{ display }</li>;
     });
     return <ul className="left">{ list }</ul>;
   }
