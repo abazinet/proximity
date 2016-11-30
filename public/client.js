@@ -6,7 +6,10 @@ class Participants extends React.Component {
   }
 
   render() {
-    const list = this.props.names.map(name => <li key={ name }>{ name }</li>);
+    const list = this.props.names.map(name => {
+      const display = name === this.props.myName ? <strong>{ name }</strong> : name;
+      return <li key={ name }>{ display }</li>;
+    });
     return <ul className="left">{ list }</ul>;
   }
 }
@@ -19,7 +22,11 @@ class Messages extends React.Component {
   }
 
   render() {
-    const list = this.props.messages.map(message => <li key={ message.author + message.text }>{ message.author + ':' + message.text }</li>);
+    const list = this.props.messages.map((message, index) =>
+      <li key={ index }>
+        <strong>{ message.author + ": " }</strong>
+        { message.text }
+      </li>);
     return <ul className="right">{ list }</ul>;
   }
 }
@@ -28,21 +35,19 @@ class Messages extends React.Component {
 class SendMessage extends React.Component {
   constructor(props) {
     super(props);
-    this.defaultProp = { name: 'missing_name', lat: 0, long: 0};
     this.state = { msg: '', disabled: false};
   }
 
-  sendMsg() {
+  sendMsg() { 
     this.setState({ disabled: true });
-
-    fetch('/post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msg: this.state.msg, ...this.props})
-    }).then(() => {
-      this.setState({ msg: '', disabled: false });
-      ReactDOM.findDOMNode(this.refs.sendMsg).focus();
-    });
+    this.props.onSend(this.state.msg)
+      .then(() => {
+        this.setState({ msg: '', disabled: false });
+        ReactDOM.findDOMNode(this.refs.sendMsg).focus();
+      }).catch(err => {
+        console.log(err);
+        this.setState({ disabled: false });
+      });
   }
 
   onChange(evt) {
@@ -56,8 +61,9 @@ class SendMessage extends React.Component {
   }
 
   render() {
-    return <div>
-      <input type="text"
+    return <div className="sendContainer">
+      <input className="sendText"
+             type="text"
              autoFocus
              value={ this.state.msg }
              disabled={ this.state.disabled }
@@ -66,7 +72,7 @@ class SendMessage extends React.Component {
              onChange={ this.onChange.bind(this) }
              onKeyPress={ this.handleOnKeyPress.bind(this) }>
       </input>
-      <button onClick={ this.sendMsg.bind(this) }>Send</button>
+      <button className="sendButton" onClick={ this.sendMsg.bind(this) }>Send</button>
     </div>;
   }
 }
@@ -75,18 +81,8 @@ class SendMessage extends React.Component {
 class Container extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      myName: Math.random().toString(36).slice(16), // TODO: ALEX: Persist the name in cache, cookie?
-      lat: 0,
-      long: 0,
-      participantNames: ['proximity_bot'],
-      messages: [
-        { author: 'proximity_bot', text: 'welcome to proximity!'},
-        { author: 'proximity_bot', text: 'i love coffee, who else does?'},
-      ]
-    };
   }
-  
+
   registerSW() {
     if (!'serviceWorker' in navigator) {
       throw new Error('does your browser support service workers?');
@@ -101,21 +97,12 @@ class Container extends React.Component {
     navigator
       .serviceWorker
       .addEventListener('message', event => {
-        const msgs = this.state.messages.slice();
+        const msgs = this.state.messages.slice(-20);
         msgs.push(event.data);
         this.setState({ messages: msgs });
     });
 
     return navigator.serviceWorker.ready;
-  }
-
-  registerBackgroundSync(registrationPromise) {
-    registrationPromise.then(swRegistration => {
-      swRegistration
-        .sync
-        .register('gw-background')
-        .catch(err => console.log(`error ${err}`));
-    });
   }
   
   urlBase64ToUint8Array(base64String) {
@@ -171,12 +158,13 @@ class Container extends React.Component {
     }).then(() => swSubscription);
   }
   
-  subscribeForPushNotifications(registrationPromise) {
-   registrationPromise
+  subscribeForPushNotifications() {
+   const { registrationPromise } = this.state;
+   return registrationPromise
       .then(swRegistration => this.ensureSubscribedForNotifications(swRegistration))
       .then(swSubscription => this.updateSubscriptionOnServer(swSubscription))
       .then(swSubscription => console.log('User successfuly subscribed for push notifications', swSubscription))
-      .catch(err => console.error('Push notifications error', err));
+      .catch(err => console.log('Push notifications error', err));
   }
   
   getLocation() {
@@ -218,19 +206,69 @@ class Container extends React.Component {
     if (!room) return;
 
     const newNames = room.colleagues.map(c => c.name);
-    newNames.push('proximity_bot')
+    newNames.push('proximity')
     this.setState({
       participantNames: newNames
     });
   }
   
-  componentDidMount() {
-    const swRegistration = this.registerSW();
-    this.registerBackgroundSync(swRegistration);
+  registerBackgroundSync(tag) {
+    console.log('registerBackgroundSync', tag);
+    const { registrationPromise } = this.state;
+    return registrationPromise.then(
+      swRegistration => swRegistration.sync.register(tag),
+      err => console.error(`[${tag}] Background sync registration error`, err)
+    );
+  }
+  
+  onSend(msg) {
+    return localforage.getItem('outbox')
+      .then(messageQueue => {
+        messageQueue = messageQueue || { messages: [] };
+        messageQueue.messages.push({
+          name: this.state.myName,
+          lat: this.state.lat,
+          long: this.state.long,
+          msg
+        });
+        return messageQueue
+      })
+      .then(messageQueue => localforage.setItem('outbox', messageQueue))
+      .then(() => this.registerBackgroundSync('gwMessage'));
+  }
+  
+  componentWillMount() {
+    const getCookieValue = name => {
+      const found = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return found ? found.pop() : '';
+    }
+
+    let name = getCookieValue('proximity_name');
+    if (!name) {
+      name = Math.random().toString(36).slice(16);
+      document.cookie = `proximity_name=${name}`;
+    }
+
+    const registrationPromise = this.registerSW();
+
+    this.state = {
+      registrationPromise,
+      myName: name,
+      lat: 0,
+      long: 0,
+      participantNames: ['proximity'],
+      messages: [
+        { author: 'proximity', text: 'welcome to proximity!'},
+        { author: 'proximity', text: 'i love coffee, who else does?'},
+      ]
+    };
     
+  }
+  
+  componentDidMount() {
     this.updateRoom()
       .then(this.updateChat.bind(this))
-      .then(this.subscribeForPushNotifications.bind(this, swRegistration))
+      .then(this.subscribeForPushNotifications.bind(this))
       
     const intervalId = setInterval(
       () => this.updateRoom().then(this.updateChat.bind(this)),
@@ -246,12 +284,12 @@ class Container extends React.Component {
   render() {
     return (
       <div>
-        <h1>Proximity</h1>
+        <h1>proximity</h1>
         <div className="container">
-          <Participants names={ this.state.participantNames } />
+          <Participants names={ this.state.participantNames } myName={ this.state.myName } />
           <Messages messages={ this.state.messages } />
         </div>
-        <SendMessage name={ this.state.myName } lat={ this.state.lat } long={ this.state.long }/>
+        <SendMessage onSend={ this.onSend.bind(this) }/>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-// init project
+// init projects 
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -7,14 +7,14 @@ const _ = require('lodash');
 const app = express();
 
 let participants = new Map();
-const roomSize = 1000; // TODO consider some reasonable value
+const roomSizeMeters = 1000;
 
 const vapidKeys = webpush.generateVAPIDKeys();
 webpush.setVapidDetails(
   'mailto:proximity@guidewire.com',
   vapidKeys.publicKey,
-  vapidKeys.privateKey 
-); 
+  vapidKeys.privateKey
+);
 
 function Person({ name, lat, long }) {
   const now  = () => new Date().getTime();
@@ -22,37 +22,38 @@ function Person({ name, lat, long }) {
 	this.name = name;
 	this.lat = lat;
 	this.long = long;
-	this.lastUpdate = now();
-	
-	this.stale = () => {
-	  const currentTime = now();
-	  return (currentTime - this.lastUpdate) > 5 * 60 * 1000;
-	};
+	this.lastUpdate = now(); 
 	this.update = rhs => {
 	  this.lat = rhs.lat;
 	  this.long = rhs.long;
 	  this.lateUpdate = now();
 	}
-	this.subscription = null;
+	this.subscription = null; 
 }
 
-function calcDistance(aLat, aLong, bLat, bLong) {
-	return Math.sqrt(Math.pow(bLat-aLat, 2) + Math.pow(bLong-aLong, 2));
+function calcDistance(lat1,lon1,lat2,lon2) {
+  const deg2rad = deg => deg * (Math.PI/180);
+  const  R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2-lat1);
+  const dLon = deg2rad(lon2-lon1); 
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const meters = R * c * 1000; 
+  console.log(meters);
+  return meters;
 }
 
 function getChatFolks(chatter) {
   return new Map(
     [...participants]
-    .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSize)
+    .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSizeMeters)
   );
 }
 
-function groomParticipants() {
-  participants = new Map(
-    [...participants]
-    .filter(([k, p]) => !p.stale())
-  );
-}
 
 function sendMsg(receiver, msg) {
   if (!receiver.subscription) {
@@ -61,10 +62,10 @@ function sendMsg(receiver, msg) {
   }
   
   webpush.sendNotification(receiver.subscription, msg)
-    .then(  
-      () => console.log(`Sent ${msg} to ${receiver.name}`),
-      err => console.error(`Could not sent ${msg} to ${receiver.name}. Reason ${err}`)
-    );
+    .then(() => console.log(`Sent ${msg} to ${receiver.name}`))
+    .catch(err => {
+      console.error(`Could not sent ${msg} to ${receiver.name}. Reason ${err}`);
+    });
 }
 
 app.set('port', (process.env.PORT || 3000));
@@ -92,9 +93,7 @@ app.post('/locate', (request, response) => {
   console.log(request.body);
 
   let chatter = new Person(request.body);
-  
-  groomParticipants(chatter);
-  
+
   const existing = participants.get(chatter.name);
 
   if (existing) {
@@ -112,10 +111,11 @@ app.post('/subscribe', (request, response) => {
   const { name, subscription } = request.body;
   console.log(`subscribe ${name}`);
   
-  const chatter = participants.get(name);
-  if (chatter) {
-    chatter.subscription = subscription;
+  let chatter = participants.get(name);
+  if (!chatter) {
+    chatter = new Person({ name });
   }
+  chatter.subscription = subscription;
 
   response.send('ok');
 });
@@ -133,6 +133,7 @@ app.post('/post', (request, response) => {
 });
 
 // listen for requests :)
-listener = app.listen(process.env.PORT, function () {
+listener = app.listen(process.env.PORT || 80, function () {		  
   console.log('Your app is listening on port ' + listener.address().port);
 });
+ 
