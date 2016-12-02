@@ -17,39 +17,39 @@ webpush.setVapidDetails(
 );
 
 function Person({ name, lat, long }) {
-  const now  = () => new Date().getTime();
+  const now = () => new Date().getTime();
 
-	this.name = name;
-	this.lat = lat;
-	this.long = long;
-	this.lastUpdate = now(); 
-	this.update = rhs => {
-	  this.lat = rhs.lat;
-	  this.long = rhs.long;
-	  this.lateUpdate = now();
-	}
-	this.subscription = null; 
+  this.name = name;
+  this.lat = lat;
+  this.long = long;
+  this.lastUpdate = now();
+  this.update = rhs => {
+    this.lat = rhs.lat;
+    this.long = rhs.long;
+    this.lateUpdate = now();
+  }
+  this.subscription = null;
 }
 
-function calcDistance(lat1,lon1,lat2,lon2) {
-  const deg2rad = deg => deg * (Math.PI/180);
-  const  R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2-lat1);
-  const dLon = deg2rad(lon2-lon1); 
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2)
-    ; 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const meters = R * c * 1000; 
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const deg2rad = deg => deg * (Math.PI / 180);
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    ;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const meters = R * c * 1000;
   return meters;
 }
 
 function getChatFolks(chatter) {
   return new Map(
-    [...participants]
-    .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSizeMeters)
+    [ ...participants ]
+      .filter(([k, p]) => calcDistance(p.lat, p.long, chatter.lat, chatter.long) <= roomSizeMeters)
   );
 }
 
@@ -59,7 +59,7 @@ function sendMsg(receiver, msg) {
     console.error(`User ${receiver.name} not subscribed properly. Cannot send notification.`);
     return;
   }
-  
+
   webpush.sendNotification(receiver.subscription, msg)
     .then(() => console.log(`Sent ${msg} to ${receiver.name}`))
     .catch(err => {
@@ -68,10 +68,10 @@ function sendMsg(receiver, msg) {
 }
 
 app.set('port', (process.env.PORT || 3000));
- 
+
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -102,18 +102,18 @@ app.post('/locate', (request, response) => {
   }
 
   let colleagues = getChatFolks(chatter);
-  colleagues = [...colleagues.values()];
+  colleagues = [ ...colleagues.values() ];
   response.send({ colleagues });
 });
 
 app.post('/subscribe', (request, response) => {
   const { name, subscription } = request.body;
   console.log(`subscribe ${name}`);
-  
+
   let chatter = participants.get(name);
   if (!chatter) {
     chatter = new Person({ name });
-  } 
+  }
   chatter.subscription = subscription;
 
   response.send('ok');
@@ -126,13 +126,13 @@ app.post('/post', (request, response) => {
     author: chatter.name,
     text: request.body.msg
   };
-  
+
   msgReceivers.forEach(person => sendMsg(person, JSON.stringify(msg)));
   response.send('ok');
 });
 
 // listen for requests :)
-listener = app.listen(process.env.PORT || 80, function () {		  
+listener = app.listen(process.env.PORT || 80, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
  
