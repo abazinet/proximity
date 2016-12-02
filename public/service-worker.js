@@ -21,12 +21,12 @@ const CACHEABLE_ASSETS = [
 function precache(files) {
   return caches.open(DEMO_CACHE).then(cache => {
       const cachePromises = files.map(urlToPrefetch => {
-        // It's very important to use {mode: 'no-cors'} if there is any chance that
-        // the resources being fetched are served off of a server that doesn't support it
-        const request = new Request(new URL(urlToPrefetch, location.href), { mode: 'no-cors' });
-        return fetch(request)
-          .then(response => cache.put(request, response.clone()))
-          .catch(error => console.error(`Not caching ${urlToPrefetch} due to ${error}`));
+        // Exercice - 4 - Service worker prefetch caching - START
+        
+        // Implement me
+        return Promise.resolve({});
+
+        // Exercice - 4 - Service worker prefetch caching - STOP
       });
 
       return Promise.all(cachePromises).then(() => console.log('Pre-fetching completed.'));
@@ -56,14 +56,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.open(DEMO_CACHE).then(cache => {
-      return cache.match(event.request).then(response => {
-        return response || fetch(event.request).then(response => {
-            if (event.request.method !== 'POST') {
-              cache.put(event.request, response.clone());
-            }
-            return response;
-          });
-      });
+      
+      // Exercice - 3 - Service worker simple caching - START
+      
+      // Implement service worker caching
+
+      // Exercice - 3 - Service worker simple caching - STOP
     })
   );
 });
@@ -84,11 +82,11 @@ self.addEventListener('sync', event => {
     return;
   }
 
-  event.waitUntil(
-    localforage.getItem('outbox')
-      .then(sendEverythingInTheOutbox)
-      .then(() => localforage.setItem('outbox', { messages: [] }))
-  );
+  // Exercice - 5 - Service worker background sync - START
+ 
+  // implement me using localforage.getItem(...)
+
+  // Exercice - 5 - Service worker background sync - STOP
 });
 
 self.addEventListener('push', event => {
@@ -98,19 +96,17 @@ self.addEventListener('push', event => {
       .then(swClients => {
         const data = event.data.json();
 
-        swClients.forEach(c => c.postMessage(data));
-
-        // show notifications only if there is no visible client at the moment
-        if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
-          return;
-        }
-
         const options = {
           body: `${data.author} says: ${data.text}`,
           icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
           badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
         };
-        self.registration.showNotification('Proximity Chat Message', options);
+        // Exercice - 7 - Service worker push notification & message passing - START
+
+        // implement sending the notification to the browser window and 
+        // passing the data back to the browser process
+
+        // Exercice - 7 - Service worker push notification & message passing - STOP
       })
   );
 });

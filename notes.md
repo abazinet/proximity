@@ -4,12 +4,12 @@ Progressive Web Apps - Introduction Workshop
 TODO Before presentation
 -----------------------
 - Print out cards with URLs to follow and long (hyperdev and aws)
-- figure out the fallback android phone
 - figure out the fallback laptop with ssh access
 - buy cards for talking notes
-- connect phone to console to get phone debug
 - clone code locally with intellj presentation mode
-- 
+- make sway available offline (html page)
+- DONE figure out the fallback android phone (will bring my wife's, checked it works)
+- DONE connect phone to console to get phone debug (working and tab cast too)
 
 
 Equipment
@@ -24,7 +24,6 @@ Equipment
 Tech Setup Before
 -----------------
 
-- Startup phone screen share
 - Load up the slides
 - Clear phone cache | history -> clear browsing -> cookie, site, images
 - Clear desktop site data for standing & aws
@@ -67,6 +66,11 @@ Workshop Application
 - web based chat
 - not downloading from the store
 - proximity based
+
+Native-like Experience
+- Startup phone screen share
+- Short explanation of hyperdev
+- Add the manifest.json
 
 
 Geolocation
