@@ -33,7 +33,7 @@ function precache(files) {
     })
     .catch(error => console.error('Pre-fetching failed:', error));
 }
-
+  
 self.addEventListener('install', event => {
   event.waitUntil(precache(CACHEABLE_ASSETS));
 });
@@ -43,7 +43,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName === DEMO_CACHE) {
+          if(cacheName === DEMO_CACHE) {
             return Promise.resolve();
           }
           return caches.delete(cacheName);
@@ -58,11 +58,11 @@ self.addEventListener('fetch', event => {
     caches.open(DEMO_CACHE).then(cache => {
       return cache.match(event.request).then(response => {
         return response || fetch(event.request).then(response => {
-            if (event.request.method !== 'POST') {
-              cache.put(event.request, response.clone());
-            }
-            return response;
-          });
+          if (event.request.method !== 'POST') {
+            cache.put(event.request, response.clone());
+          }
+          return response;
+        });
       });
     })
   );
@@ -79,11 +79,11 @@ function sendEverythingInTheOutbox(messageQueue) {
   return Promise.resolve();
 }
 
-self.addEventListener('sync', event => {
+self.addEventListener('sync',  event => {
   if (event.tag !== 'gwMessage') {
     return;
   }
-
+    
   event.waitUntil(
     localforage.getItem('outbox')
       .then(sendEverythingInTheOutbox)
@@ -98,7 +98,7 @@ self.addEventListener('push', event => {
       .then(swClients => {
         const data = event.data.json();
 
-        swClients.forEach(c => c.postMessage(data));
+        swClients.forEach(c  => c.postMessage(data));
 
         // show notifications only if there is no visible client at the moment
         if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
@@ -115,21 +115,21 @@ self.addEventListener('push', event => {
   );
 });
 
-self.addEventListener('notificationclick', event => {
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  event.waitUntil(
+	event.waitUntil(
     clients
       .matchAll({ includeUncontrolled: true, type: 'window' })
       .then(swClients => {
-        // This looks to see if any client windows are open and tries to focus one
+      	// This looks to see if any client windows are open and tries to focus one
         for (const client of swClients) {
           if ('focus' in client) {
             return client.focus();
           }
         }
-
-        // Anotherwise it just opens a new one
+    
+    		// Anotherwise it just opens a new one
         if (clients.openWindow) {
           return clients.openWindow('/');
         }
