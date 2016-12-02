@@ -88,11 +88,11 @@ class Container extends React.Component {
       throw new Error('does your browser support service workers?');
     }
 
-    // Exercice - 2 - Service worker registration - START 
+    // Exercise - 2 - Service worker registration - START 
      
     // Implement the service worker registration
      
-    // Exercice - 2 - Service worker registration - STOP
+    // Exercise - 2 - Service worker registration - STOP
   
     navigator
       .serviceWorker
