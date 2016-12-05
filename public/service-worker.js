@@ -21,12 +21,12 @@ const CACHEABLE_ASSETS = [
 function precache(files) {
   return caches.open(DEMO_CACHE).then(cache => {
       const cachePromises = files.map(urlToPrefetch => {
-        // Exercise - 4 - Service worker prefetch caching - START
+        // Exercice - 4 - Service worker prefetch caching - START
         
         // Implement me
         return Promise.resolve({});
 
-        // Exercise - 4 - Service worker prefetch caching - STOP
+        // Exercice - 4 - Service worker prefetch caching - STOP
       });
 
       return Promise.all(cachePromises).then(() => console.log('Pre-fetching completed.'));
@@ -57,11 +57,11 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.open(DEMO_CACHE).then(cache => {
       
-      // Exercise - 3 - Service worker simple caching - START
+      // Exercice - 3 - Service worker simple caching - START
       
       // Implement service worker caching
 
-      // Exercise - 3 - Service worker simple caching - STOP
+      // Exercice - 3 - Service worker simple caching - STOP
     })
   );
 });
@@ -82,11 +82,11 @@ self.addEventListener('sync', event => {
     return;
   }
 
-  // Exercise - 5 - Service worker background sync - START
+  // Exercice - 5 - Service worker background sync - START
  
   // implement me using localforage.getItem(...)
 
-  // Exercise - 5 - Service worker background sync - STOP
+  // Exercice - 5 - Service worker background sync - STOP
 });
 
 self.addEventListener('push', event => {
@@ -101,12 +101,12 @@ self.addEventListener('push', event => {
           icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
           badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
         };
-        // Exercise - 6 - Service worker push notification & message passing - START
+        // Exercice - 7 - Service worker push notification & message passing - START
 
         // implement sending the notification to the browser window and 
         // passing the data back to the browser process
 
-        // Exercise - 6 - Service worker push notification & message passing - STOP
+        // Exercice - 7 - Service worker push notification & message passing - STOP
       })
   );
 });

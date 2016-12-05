@@ -4,7 +4,6 @@ Progressive Web Apps - Introduction Workshop
 TODO Before presentation
 -----------------------
 - Print out cards with URLs to follow and long (hyperdev and aws)
-- create the google doc with links
 - figure out the fallback laptop with ssh access
 - buy cards for talking notes
 - clone code locally with intellj presentation mode
@@ -71,7 +70,7 @@ Workshop Application
 Native-like Experience
 - Startup phone screen share
 - Short explanation of hyperdev
-- Add the manifest.json video
+- Add the manifest.json
 
 
 Geolocation

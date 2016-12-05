@@ -88,11 +88,11 @@ class Container extends React.Component {
       throw new Error('does your browser support service workers?');
     }
 
-    // Exercise - 2 - Service worker registration - START 
+    // Exercice - 2 - Service worker registration - START 
      
     // Implement the service worker registration
      
-    // Exercise - 2 - Service worker registration - STOP
+    // Exercice - 2 - Service worker registration - STOP
   
     navigator
       .serviceWorker
@@ -171,10 +171,10 @@ class Container extends React.Component {
     return new Promise((resolve, reject) => {
       // Exercice - 1 - Geolocation - START
       // Replace this code with your implementation
-      return Promise.resolve({
+      resolve({
         coords: {
-          latitude: 0,
-          longitude: 0
+          latitude: 0.0,
+          longitude: 0.0
         }
       });
       // Exercice - 1 - Geolocation - STOP
