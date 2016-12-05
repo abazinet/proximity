@@ -90,7 +90,11 @@ class Container extends React.Component {
 
     // Exercice - 2 - Service worker registration - START 
      
-    // Implement the service worker registration
+    navigator
+  .serviceWorker
+  .register('service-worker.js')
+  .then(registration => console.log(`Push ServiceWorker registered: ${registration.scope}`))
+  .catch(err => console.error(`ServiceWorker registration failed: ${err}`))
      
     // Exercice - 2 - Service worker registration - STOP
   
@@ -171,12 +175,12 @@ class Container extends React.Component {
     return new Promise((resolve, reject) => {
       // Exercice - 1 - Geolocation - START
       // Replace this code with your implementation
-      resolve({
-        coords: {
-          latitude: 0.0,
-          longitude: 0.0
-        }
-      });
+      navigator.geolocation
+        .getCurrentPosition(
+          resolve,
+          reject,
+          { maximumAge: 3000, timeout: 5000, enableHighAccuracy: true }
+      );
       // Exercice - 1 - Geolocation - STOP
     });
   }
