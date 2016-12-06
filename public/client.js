@@ -171,7 +171,7 @@ class Container extends React.Component {
     return new Promise((resolve, reject) => {
       // Exercice - 1 - Geolocation - START
       // Replace this code with your implementation
-      return Promise.resolve({
+      resolve({
         coords: {
           latitude: 0,
           longitude: 0
