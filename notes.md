@@ -3,13 +3,15 @@ Progressive Web Apps - Introduction Workshop
 
 TODO Before presentation
 -----------------------
-- Print out cards with URLs to follow and long (hyperdev and aws)
-- figure out the fallback laptop with ssh access
-- buy cards for talking notes
+- DONE Print out cards with URLs to follow and long (hyperdev and aws)
+- DONE figure out the fallback laptop with ssh access
+- DONE buy cards for talking notes
 - clone code locally with intellj presentation mode
 - make sway available offline (html page)
 - DONE figure out the fallback android phone (will bring my wife's, checked it works)
 - DONE connect phone to console to get phone debug (working and tab cast too)
+- DONE prepare questions for the introduction
+- DONE add meme at the end
 
 
 Equipment
@@ -18,7 +20,9 @@ Equipment
 - charged phone x 2
 - laptop x 2
 - cable
-
+- ethernet cable
+- router
+- power cords
 
 
 Tech Setup Before
@@ -29,7 +33,6 @@ Tech Setup Before
 - Clear desktop site data for standing & aws
 - Clear service workers internal: chrome://serviceworker-internals
 - Refresh backends on aws and hyperdev
-- Connect airmore
 - Hyperdev connectivity test
  
 Introduction
