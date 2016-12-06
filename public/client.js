@@ -171,7 +171,7 @@ class Container extends React.Component {
     return new Promise((resolve, reject) => {
       // Exercice - 1 - Geolocation - START
       // Replace this code with your implementation
-      resolve({
+      return Promise.resolve({
         coords: {
           latitude: 0,
           longitude: 0
@@ -287,7 +287,7 @@ class Container extends React.Component {
   render() {
     return (
       <div>
-        <h1>proximity - alex</h1>
+        <h1>proximity</h1>
         <div className="container">
           <Participants names={ this.state.participantNames } myName={ this.state.myName }/>
           <Messages messages={ this.state.messages }/>

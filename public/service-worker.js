@@ -67,13 +67,13 @@ self.addEventListener('fetch', event => {
 });
 
 function sendEverythingInTheOutbox(messageQueue) {
-  messageQueue.messages.forEach(msg => {
-    fetch('/post', {
+  setTimeout(() => messageQueue.messages.forEach(msg => {
+    return fetch('/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(msg)
     });
-  });
+  }), 1000);
   return Promise.resolve();
 }
 
