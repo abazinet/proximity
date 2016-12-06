@@ -38,20 +38,9 @@ event.waitUntil(
     .then(() => localforage.setItem('outbox', { messages: [] }))
 );
 
-// Exercice - 6 - Service worker background sync
-event.waitUntil(
-  localforage.getItem('outbox')
-    .then(sendEverythingInTheOutbox)
-    .then(() => localforage.setItem('outbox', { messages: [] }))
-);
   
-// Exercice - 7 - Service worker push notification & message passing
+// Exercice - 6 - Service worker push notification & message passing
 swClients.forEach(c => c.postMessage(data));
-
-// show notifications only if there is no visible client at the moment
-if (swClients.some(c => c.visibilityState && c.visibilityState !== 'hidden')) {
-  return;
-}
 
 self.registration.showNotification('Proximity Chat Message', options);
 

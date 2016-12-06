@@ -101,12 +101,12 @@ self.addEventListener('push', event => {
           icon: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png',
           badge: 'https://cdn.hyperdev.com/b3db0fb8-a317-4384-bb5a-8f7f3d7e608c%2Ficon192.png'
         };
-        // Exercice - 7 - Service worker push notification & message passing - START
+        // Exercice - 6 - Service worker push notification & message passing - START
 
         // implement sending the notification to the browser window and 
         // passing the data back to the browser process
 
-        // Exercice - 7 - Service worker push notification & message passing - STOP
+        // Exercice - 6 - Service worker push notification & message passing - STOP
       })
   );
 });
