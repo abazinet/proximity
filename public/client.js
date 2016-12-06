@@ -89,7 +89,7 @@ class Container extends React.Component {
     }
 
     // Exercice - 2 - Service worker registration - START 
-     
+
     // Implement the service worker registration
      
     // Exercice - 2 - Service worker registration - STOP
