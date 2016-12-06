@@ -7,7 +7,7 @@ TODO Before presentation
 - DONE figure out the fallback laptop with ssh access
 - DONE buy cards for talking notes
 - clone code locally with intellj presentation mode
-- make sway available offline (html page)
+- DONE make sway available offline (html page)
 - DONE figure out the fallback android phone (will bring my wife's, checked it works)
 - DONE connect phone to console to get phone debug (working and tab cast too)
 - DONE prepare questions for the introduction
